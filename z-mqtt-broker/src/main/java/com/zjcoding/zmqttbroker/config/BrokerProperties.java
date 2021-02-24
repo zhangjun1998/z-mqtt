@@ -31,4 +31,10 @@ public class BrokerProperties {
      */
     private boolean soKeepAlive = true;
 
+    /**
+     * 用户名、密码
+     */
+    private String userName = "";
+    private String password = "";
+
 }
