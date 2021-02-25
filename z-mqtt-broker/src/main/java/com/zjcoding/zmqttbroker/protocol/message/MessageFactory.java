@@ -3,7 +3,7 @@ package com.zjcoding.zmqttbroker.protocol.message;
 import io.netty.handler.codec.mqtt.*;
 
 /**
- * 暂无描述
+ * 消息工厂
  *
  * @author ZhangJun
  * @date 14:00 2021/2/24

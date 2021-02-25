@@ -1,6 +1,6 @@
 package com.zjcoding.zmqttbroker.handler;
 
-import com.zjcoding.zmqttbroker.protocol.process.MessageProcessorImpl;
+import com.zjcoding.zmqttbroker.protocol.processor.MessageProcessorImpl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.mqtt.MqttMessage;

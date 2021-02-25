@@ -21,6 +21,8 @@
 
     <modules>
         <module>z-mqtt-broker</module>
+        <module>z-mqtt-store</module>
+        <module>z-mqtt-common</module>
     </modules>
 
     <dependencies>
