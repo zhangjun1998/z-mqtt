@@ -2,6 +2,7 @@ package com.zjcoding.zmqttbroker.protocol.processor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import org.springframework.stereotype.Component;
 
 /**
  * MQTT消息处理接口
@@ -9,6 +10,7 @@ import io.netty.handler.codec.mqtt.MqttMessage;
  * @author ZhangJun
  * @date 11:27 2021/2/24
  */
+@Component
 public interface IMessageProcessor {
 
     /**

@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
  */
 
 @Component
-public class AuthImpl implements IAuth{
+public class AuthImpl implements IAuth {
 
     @Resource
     private BrokerProperties brokerProperties;

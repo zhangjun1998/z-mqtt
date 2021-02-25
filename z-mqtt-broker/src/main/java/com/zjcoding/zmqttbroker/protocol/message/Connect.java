@@ -30,12 +30,12 @@ public class Connect {
     private ISessionStore sessionStore;
 
     public void processConnect(ChannelHandlerContext ctx, MqttConnectMessage mqttMessage) {
-        if (mqttMessage.decoderResult().isFailure()){
+        if (mqttMessage.decoderResult().isFailure()) {
             Throwable throwable = mqttMessage.decoderResult().cause();
 
             if (throwable instanceof MqttUnacceptableProtocolVersionException) {
                 ctx.channel().writeAndFlush(MessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION));
-            }else if (throwable instanceof MqttIdentifierRejectedException) {
+            } else if (throwable instanceof MqttIdentifierRejectedException) {
                 ctx.channel().writeAndFlush(MessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID));
             }
 
@@ -47,7 +47,7 @@ public class Connect {
         boolean isCleanSession = mqttMessage.variableHeader().isCleanSession();
 
         // 按照MQTTv3.1.1规范，clientId为空时服务端自动生成一个ClientId，且将cleanSession设置为1
-        if (!StringUtils.hasText(clientId)){
+        if (!StringUtils.hasText(clientId)) {
             clientId = UUID.randomUUID().toString();
             isCleanSession = true;
         }
@@ -60,13 +60,13 @@ public class Connect {
         }
 
         // 处理sessionPresent，清除历史会话状态
-        if (isCleanSession){
+        if (isCleanSession) {
             sessionStore.cleanSession(clientId);
         }
 
         // 处理遗嘱消息
         MqttSession mqttSession = new MqttSession(clientId, isCleanSession, ctx.channel(), false);
-        if (mqttMessage.variableHeader().isWillFlag()){
+        if (mqttMessage.variableHeader().isWillFlag()) {
             mqttSession.setHasWill(true);
             mqttSession.setWillTopic(mqttMessage.payload().willTopic());
             mqttSession.setWillContent(new String(mqttMessage.payload().willMessageInBytes(), StandardCharsets.UTF_8));

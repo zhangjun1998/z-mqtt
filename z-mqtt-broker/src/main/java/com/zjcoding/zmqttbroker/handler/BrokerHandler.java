@@ -1,9 +1,12 @@
 package com.zjcoding.zmqttbroker.handler;
 
+import com.zjcoding.zmqttbroker.protocol.processor.IMessageProcessor;
 import com.zjcoding.zmqttbroker.protocol.processor.MessageProcessorImpl;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
@@ -13,10 +16,13 @@ import javax.annotation.Resource;
  * @author ZhangJun
  * @date 10:40 2021/2/24
  */
+
+@ChannelHandler.Sharable
+@Component
 public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     @Resource
-    private MessageProcessorImpl messageProcessor;
+    private IMessageProcessor messageProcessor;
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {

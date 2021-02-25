@@ -27,6 +27,9 @@ import javax.annotation.Resource;
 public class BrokerServer {
 
     @Resource
+    private BrokerHandler brokerHandler;
+
+    @Resource
     private BrokerProperties brokerProperties;
 
     private EventLoopGroup bossGroup;
@@ -74,7 +77,7 @@ public class BrokerServer {
                                 .addFirst("heartbeat", new IdleStateHandler(0, 0, brokerProperties.getKeepAlive()))
                                 .addLast("decoder", new MqttDecoder())
                                 .addLast("encoder", MqttEncoder.INSTANCE)
-                                .addLast("brokerHandler", new BrokerHandler());
+                                .addLast("brokerHandler", brokerHandler);
                     }
                 })
                 .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.isSoKeepAlive());

@@ -7,13 +7,13 @@
         <artifactId>z-mqtt</artifactId>
         <groupId>com.zjcoding</groupId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
 
     <artifactId>z-mqtt-common</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>z-mqtt-common</name>
     <description>common service for z-mqtt</description>
 

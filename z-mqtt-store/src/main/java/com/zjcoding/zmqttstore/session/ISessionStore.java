@@ -17,7 +17,7 @@ public interface ISessionStore {
     /**
      * MQTT会话存储
      *
-     * @param clientId: 客户端标识
+     * @param clientId:    客户端标识
      * @param mqttSession: MQTT会话
      * @author ZhangJun
      * @date 23:40 2021/2/24

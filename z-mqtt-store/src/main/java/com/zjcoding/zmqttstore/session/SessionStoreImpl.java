@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 @Component
-public class SessionStoreImpl implements ISessionStore{
+public class SessionStoreImpl implements ISessionStore {
 
     private ConcurrentHashMap<String, MqttSession> sessionMap = new ConcurrentHashMap<>();
 

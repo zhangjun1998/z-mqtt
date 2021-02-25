@@ -7,13 +7,13 @@
         <artifactId>z-mqtt</artifactId>
         <groupId>com.zjcoding</groupId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>z-mqtt-store</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>z-mqtt-store</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <description>Message store service</description>
 
     <properties>
@@ -33,6 +33,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>7</source>
+                    <target>7</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
