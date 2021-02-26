@@ -31,6 +31,33 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
             case CONNACK:
                 break;
             case PUBLISH:
+
+                break;
+            case PUBACK:
+                break;
+            case PUBREC:
+                break;
+            case PUBREL:
+                break;
+            case PUBCOMP:
+                break;
+            case SUBSCRIBE:
+
+                break;
+            case SUBACK:
+                break;
+            case UNSUBSCRIBE:
+
+                break;
+            case UNSUBACK:
+                break;
+            case PINGREQ:
+
+                break;
+            case PINGRESP:
+                break;
+            case DISCONNECT:
+
                 break;
             default:
                 // ctx.channel().close();

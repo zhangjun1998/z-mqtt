@@ -34,7 +34,7 @@ public interface ISessionStore {
     void cleanSession(String clientId);
 
     /**
-     * 根据客户端标识查看是否存在历史会话
+     * 根据客户端标识查看是否存在该会话
      *
      * @param clientId:
      * @return boolean

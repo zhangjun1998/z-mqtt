@@ -3,6 +3,7 @@ package com.zjcoding.zmqttstore.message.impl;
 import com.zjcoding.zmqttstore.message.IMessageStore;
 import io.netty.handler.codec.mqtt.MqttMessage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,13 +17,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MessageStoreImpl implements IMessageStore {
 
-    private Map<String, List<MqttMessage>> messageMap = new HashMap<>();
+    /**
+     * todo 这种存储结构好像不太合适，而且MqttMessage没有实现序列化接口
+     */
+    private Map<String, MqttMessage> messageMap = new ConcurrentHashMap<>();
 
     @Override
     public void storeMessage(String topic, MqttMessage mqttMessage) {
         // todo ConcurrentHashMap中存储List也不安全，如何改进并发存储性能
-        synchronized (messageMap) {
-            // List<MqttMessage> messageList = messageMap.putIfAbsent(new )
-        }
+        messageMap.put(topic, mqttMessage);
+    }
+
+    @Override
+    public void cleanTopic(String topic) {
+        messageMap.remove(topic);
     }
 }

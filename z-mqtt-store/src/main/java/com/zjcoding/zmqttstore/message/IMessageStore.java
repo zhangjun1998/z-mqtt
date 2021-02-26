@@ -3,7 +3,7 @@ package com.zjcoding.zmqttstore.message;
 import io.netty.handler.codec.mqtt.MqttMessage;
 
 /**
- * 消息存储接口
+ * Retain消息存储接口
  *
  * @author ZhangJun
  * @date 15:47 2021/2/26
@@ -20,5 +20,14 @@ public interface IMessageStore {
      * @date 16:00 2021/2/26
      */
     void storeMessage(String topic, MqttMessage mqttMessage);
+
+    /**
+     * 清除topic下的所有消息
+     *
+     * @param topic: 主题
+     * @author ZhangJun
+     * @date 23:22 2021/2/26
+     */
+    void cleanTopic(String topic);
 
 }

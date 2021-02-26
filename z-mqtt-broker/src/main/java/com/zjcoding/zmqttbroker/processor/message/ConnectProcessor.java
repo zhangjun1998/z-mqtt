@@ -82,7 +82,7 @@ public class ConnectProcessor {
             ctx.pipeline().addFirst("heartbeat", new IdleStateHandler(0, 0, Math.round(connectMessage.variableHeader().keepAliveTimeSeconds() * 1.5f)));
         }
 
-        // 给channel加上clientId作为属性
+        // 给channel加上clientId作为属性，防止未经授权的连接直接发送控制包
         ctx.channel().attr(AttributeKey.valueOf("clientId")).set(clientId);
 
         // 返回CONNACK控制包
