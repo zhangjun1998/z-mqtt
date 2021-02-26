@@ -1,4 +1,4 @@
-package com.zjcoding.zmqttbroker.protocol.message;
+package com.zjcoding.zmqttbroker.processor;
 
 import io.netty.handler.codec.mqtt.*;
 
@@ -8,7 +8,7 @@ import io.netty.handler.codec.mqtt.*;
  * @author ZhangJun
  * @date 14:00 2021/2/24
  */
-public class MessageFactory {
+public class MQTTFactory {
 
     /**
      * 根据参数创建指定的CONNACK控制包

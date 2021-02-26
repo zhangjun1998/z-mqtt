@@ -1,7 +1,6 @@
 package com.zjcoding.zmqttbroker.handler;
 
-import com.zjcoding.zmqttbroker.protocol.processor.IMessageProcessor;
-import com.zjcoding.zmqttbroker.protocol.processor.MessageProcessorImpl;
+import com.zjcoding.zmqttbroker.processor.protocol.IProtocolProcessor;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,7 +21,7 @@ import javax.annotation.Resource;
 public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     @Resource
-    private IMessageProcessor messageProcessor;
+    private IProtocolProcessor protocol;
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -58,6 +57,6 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, MqttMessage mqttMessage) throws Exception {
-        messageProcessor.processMqttMessage(channelHandlerContext, mqttMessage);
+        protocol.processMqttMessage(channelHandlerContext, mqttMessage);
     }
 }

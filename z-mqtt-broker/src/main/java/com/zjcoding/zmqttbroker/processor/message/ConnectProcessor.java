@@ -1,5 +1,6 @@
-package com.zjcoding.zmqttbroker.protocol.message;
+package com.zjcoding.zmqttbroker.processor.message;
 
+import com.zjcoding.zmqttbroker.processor.MQTTFactory;
 import com.zjcoding.zmqttbroker.security.IAuth;
 import com.zjcoding.zmqttcommon.session.MqttSession;
 import com.zjcoding.zmqttstore.session.ISessionStore;
@@ -15,13 +16,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
- * 处理CONNECT控制包
+ * CONNECT控制包处理
  *
  * @author ZhangJun
  * @date 13:48 2021/2/24
  */
 @Component
-public class Connect {
+public class ConnectProcessor {
 
     @Resource
     private IAuth auth;
@@ -29,22 +30,22 @@ public class Connect {
     @Resource
     private ISessionStore sessionStore;
 
-    public void processConnect(ChannelHandlerContext ctx, MqttConnectMessage mqttMessage) {
-        if (mqttMessage.decoderResult().isFailure()) {
-            Throwable throwable = mqttMessage.decoderResult().cause();
+    public void processConnect(ChannelHandlerContext ctx, MqttConnectMessage connectMessage) {
+        if (connectMessage.decoderResult().isFailure()) {
+            Throwable throwable = connectMessage.decoderResult().cause();
 
             if (throwable instanceof MqttUnacceptableProtocolVersionException) {
-                ctx.channel().writeAndFlush(MessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION));
+                ctx.channel().writeAndFlush(MQTTFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION));
             } else if (throwable instanceof MqttIdentifierRejectedException) {
-                ctx.channel().writeAndFlush(MessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID));
+                ctx.channel().writeAndFlush(MQTTFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID));
             }
 
             ctx.channel().close();
             return;
         }
 
-        String clientId = mqttMessage.payload().clientIdentifier();
-        boolean isCleanSession = mqttMessage.variableHeader().isCleanSession();
+        String clientId = connectMessage.payload().clientIdentifier();
+        boolean isCleanSession = connectMessage.variableHeader().isCleanSession();
 
         // 按照MQTTv3.1.1规范，clientId为空时服务端自动生成一个ClientId，且将cleanSession设置为1
         if (!StringUtils.hasText(clientId)) {
@@ -53,8 +54,8 @@ public class Connect {
         }
 
         // 校验用户名、密码
-        if (!auth.checkAuth(mqttMessage)) {
-            ctx.channel().writeAndFlush(MessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD));
+        if (!auth.checkAuth(connectMessage)) {
+            ctx.channel().writeAndFlush(MQTTFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD));
             ctx.channel().close();
             return;
         }
@@ -66,19 +67,19 @@ public class Connect {
 
         // 处理遗嘱消息
         MqttSession mqttSession = new MqttSession(clientId, isCleanSession, ctx.channel(), false);
-        if (mqttMessage.variableHeader().isWillFlag()) {
+        if (connectMessage.variableHeader().isWillFlag()) {
             mqttSession.setHasWill(true);
-            mqttSession.setWillTopic(mqttMessage.payload().willTopic());
-            mqttSession.setWillContent(new String(mqttMessage.payload().willMessageInBytes(), StandardCharsets.UTF_8));
-            mqttSession.setWillRetain(mqttMessage.variableHeader().isWillRetain());
+            mqttSession.setWillTopic(connectMessage.payload().willTopic());
+            mqttSession.setWillContent(new String(connectMessage.payload().willMessageInBytes(), StandardCharsets.UTF_8));
+            mqttSession.setWillRetain(connectMessage.variableHeader().isWillRetain());
         }
 
         // 处理keepAlive，达到1.5个心跳周期时断开连接
-        if (mqttMessage.variableHeader().keepAliveTimeSeconds() > 0) {
+        if (connectMessage.variableHeader().keepAliveTimeSeconds() > 0) {
             if (ctx.channel().pipeline().names().contains("heartbeat")) {
                 ctx.channel().pipeline().remove("heartbeat");
             }
-            ctx.pipeline().addFirst("heartbeat", new IdleStateHandler(0, 0, Math.round(mqttMessage.variableHeader().keepAliveTimeSeconds() * 1.5f)));
+            ctx.pipeline().addFirst("heartbeat", new IdleStateHandler(0, 0, Math.round(connectMessage.variableHeader().keepAliveTimeSeconds() * 1.5f)));
         }
 
         // 给channel加上clientId作为属性
@@ -86,11 +87,10 @@ public class Connect {
 
         // 返回CONNACK控制包
         boolean sessionPresent = !isCleanSession && sessionStore.containsKey(clientId);
-        ctx.channel().writeAndFlush(MessageFactory.getConnAck(sessionPresent, MqttConnectReturnCode.CONNECTION_ACCEPTED));
+        ctx.channel().writeAndFlush(MQTTFactory.getConnAck(sessionPresent, MqttConnectReturnCode.CONNECTION_ACCEPTED));
 
         // 当Clean Session为0时，需要恢复会话 todo
 
 
     }
-
 }

@@ -1,15 +1,17 @@
-package com.zjcoding.zmqttbroker.protocol.process;
+package com.zjcoding.zmqttbroker.processor.protocol;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import org.springframework.stereotype.Component;
 
 /**
- * MQTT消息处理接口
+ * MQTT协议相关接口
  *
  * @author ZhangJun
  * @date 11:27 2021/2/24
  */
-public interface IMessageProcessor {
+@Component
+public interface IProtocolProcessor {
 
     /**
      * 处理MQTT消息
