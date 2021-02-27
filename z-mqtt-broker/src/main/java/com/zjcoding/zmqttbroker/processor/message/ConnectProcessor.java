@@ -1,6 +1,6 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
-import com.zjcoding.zmqttbroker.processor.MQTTFactory;
+import com.zjcoding.zmqttcommon.factory.MQTTFactory;
 import com.zjcoding.zmqttbroker.security.IAuth;
 import com.zjcoding.zmqttcommon.session.MqttSession;
 import com.zjcoding.zmqttstore.session.ISessionStore;
@@ -30,6 +30,14 @@ public class ConnectProcessor {
     @Resource
     private ISessionStore sessionStore;
 
+    /**
+     * CONNECT控制包处理
+     *
+     * @param ctx: ChannelHandler上下文
+     * @param connectMessage: CONNECT控制包
+     * @author ZhangJun
+     * @date 10:44 2021/2/27
+     */
     public void processConnect(ChannelHandlerContext ctx, MqttConnectMessage connectMessage) {
         if (connectMessage.decoderResult().isFailure()) {
             Throwable throwable = connectMessage.decoderResult().cause();
@@ -84,6 +92,8 @@ public class ConnectProcessor {
 
         // 给channel加上clientId作为属性，防止未经授权的连接直接发送控制包
         ctx.channel().attr(AttributeKey.valueOf("clientId")).set(clientId);
+        // 存储会话信息
+        sessionStore.storeSession(clientId, mqttSession);
 
         // 返回CONNACK控制包
         boolean sessionPresent = !isCleanSession && sessionStore.containsKey(clientId);

@@ -26,6 +26,14 @@ public class PublishProcessor {
     @Resource
     private IMessageStore messageStore;
 
+    /**
+     * PUBLISH控制包处理
+     *
+     * @param ctx: ChannelHandler上下文
+     * @param publishMessage: PUBLISH控制包
+     * @author ZhangJun
+     * @date 10:44 2021/2/27
+     */
     public void processPublish(ChannelHandlerContext ctx, MqttPublishMessage publishMessage) {
 
         String clentId = ctx.channel().attr(AttributeKey.valueOf("clientId")).get().toString();

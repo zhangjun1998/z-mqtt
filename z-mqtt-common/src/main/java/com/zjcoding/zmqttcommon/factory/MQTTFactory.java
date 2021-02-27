@@ -1,6 +1,8 @@
-package com.zjcoding.zmqttbroker.processor;
+package com.zjcoding.zmqttcommon.factory;
 
 import io.netty.handler.codec.mqtt.*;
+
+import java.util.List;
 
 /**
  * 消息工厂
@@ -24,6 +26,23 @@ public class MQTTFactory {
                 new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 new MqttConnAckVariableHeader(returnCode, sessionPresent),
                 null
+        );
+    }
+
+    /**
+     * 根据参数创建指定的SUBACK控制包
+     *
+     * @param messageId: 对应的SUBSCRIBE控制包标识
+     * @param grantedQoSLevels: 对应订阅主题的Qos集合
+     * @return io.netty.handler.codec.mqtt.MqttMessage
+     * @author ZhangJun
+     * @date 15:00 2021/2/27
+     */
+    public static MqttMessage getSubAck(int messageId, List<Integer> grantedQoSLevels) {
+        return MqttMessageFactory.newMessage(
+                new MqttFixedHeader(MqttMessageType.SUBACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
+                MqttMessageIdVariableHeader.from(messageId),
+                new MqttSubAckPayload(grantedQoSLevels)
         );
     }
 

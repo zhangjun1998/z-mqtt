@@ -2,10 +2,8 @@ package com.zjcoding.zmqttstore.message.impl;
 
 import com.zjcoding.zmqttstore.message.IMessageStore;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author ZhangJun
  * @date 15:50 2021/2/26
  */
+
+@Component
 public class MessageStoreImpl implements IMessageStore {
 
     /**

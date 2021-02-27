@@ -1,6 +1,7 @@
 package com.zjcoding.zmqttstore.message;
 
 import io.netty.handler.codec.mqtt.MqttMessage;
+import org.springframework.stereotype.Component;
 
 /**
  * Retain消息存储接口
@@ -8,6 +9,8 @@ import io.netty.handler.codec.mqtt.MqttMessage;
  * @author ZhangJun
  * @date 15:47 2021/2/26
  */
+
+@Component
 public interface IMessageStore {
 
     /**

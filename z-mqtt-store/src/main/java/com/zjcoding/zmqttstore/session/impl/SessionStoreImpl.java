@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class SessionStoreImpl implements ISessionStore {
 
-    private ConcurrentHashMap<String, MqttSession> sessionMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, MqttSession> sessionMap = new ConcurrentHashMap<>();
 
     @Override
     public void storeSession(String clientId, MqttSession mqttSession) {
