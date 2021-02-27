@@ -3,6 +3,8 @@ package com.zjcoding.zmqttstore.message;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Retain消息存储接口
  *
@@ -18,7 +20,6 @@ public interface IMessageStore {
      *
      * @param topic: 控制包所属主题
      * @param mqttMessage: 控制包
-     * @return void
      * @author ZhangJun
      * @date 16:00 2021/2/26
      */
@@ -32,5 +33,15 @@ public interface IMessageStore {
      * @date 23:22 2021/2/26
      */
     void cleanTopic(String topic);
+
+    /**
+     * 匹配主题过滤器，寻找对应消息
+     *
+     * @param topicFilter: 主题过滤器
+     * @return java.util.List<io.netty.handler.codec.mqtt.MqttMessage>
+     * @author ZhangJun
+     * @date 0:01 2021/2/28
+     */
+    List<MqttMessage> searchMessages(String topicFilter);
 
 }

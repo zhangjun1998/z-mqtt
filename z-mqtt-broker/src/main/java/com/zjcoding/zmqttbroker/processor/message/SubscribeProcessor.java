@@ -1,17 +1,19 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
-import com.zjcoding.zmqttcommon.factory.MQTTFactory;
+import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
+import com.zjcoding.zmqttcommon.util.TopicUtil;
+import com.zjcoding.zmqttstore.message.IMessageStore;
 import com.zjcoding.zmqttstore.session.ISessionStore;
 import com.zjcoding.zmqttstore.subscribe.ISubscribeStore;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import io.netty.util.AttributeKey;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -31,7 +33,13 @@ public class SubscribeProcessor {
     private ISessionStore sessionStore;
 
     @Resource
+    private IMessageStore messageStore;
+
+    @Resource
     private ISubscribeStore subscribeStore;
+
+    @Resource
+    private TopicUtil topicUtil;
 
     /**
      * SUBSCRIBE控制包处理
@@ -55,53 +63,50 @@ public class SubscribeProcessor {
         int messageId = subscribeMessage.variableHeader().messageId();
 
         List<MqttTopicSubscription> subscriptionList = subscribeMessage.payload().topicSubscriptions();
+        List<MqttTopicSubscription> checkedSubscriptionList = new ArrayList<>();
+
         String topicFilter;
         MqttQoS qos;
-        List<Integer> grantedQoSLevels = new ArrayList<>();
+        List<Integer> grantedQosLevels = new ArrayList<>();
+
         if (!CollectionUtils.isEmpty(subscriptionList)) {
             // 处理订阅主题
             for (MqttTopicSubscription subscription : subscriptionList) {
                 topicFilter = subscription.topicName();
-                if (checkTopicFilter(topicFilter)) {
+                if (topicUtil.checkTopicFilter(topicFilter)) {
+                    checkedSubscriptionList.add(subscription);
+                    // 存储订阅信息
                     qos = subscription.qualityOfService();
                     subscribeStore.storeSubscribe(topicFilter, new MqttSubscribe(clientId, topicFilter, qos.value()));
-                    grantedQoSLevels.add(qos.value());
+                    grantedQosLevels.add(qos.value());
                 }else {
-                    grantedQoSLevels.add(MqttQoS.FAILURE.value());
+                    grantedQosLevels.add(MqttQoS.FAILURE.value());
                 }
             }
             // 返回订阅ACK
-            ctx.channel().writeAndFlush(MQTTFactory.getSubAck(messageId, grantedQoSLevels));
+            ctx.channel().writeAndFlush(ZMqttMessageFactory.getSubAck(messageId, grantedQosLevels));
 
             // 向该订阅者发送订阅主题下的retain消息
+            List<MqttMessage> retainMessages;
+            int checkedQos;
+            String checkedTopicFilter;
+            for (MqttTopicSubscription subscription : checkedSubscriptionList) {
+                checkedQos = subscription.qualityOfService().value();
+                checkedTopicFilter = subscription.topicName();
+                // 发送该topicFilter下需要返回的retain消息
+                retainMessages = messageStore.searchMessages(checkedTopicFilter);
+                for (MqttMessage retainMessage : retainMessages) {
+                    checkedQos = Math.min(checkedQos, retainMessage.fixedHeader().qosLevel().value());
+                    // 通过算法生成packetId todo
+                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, retainMessage.payload(), 0));
+                }
+
+            }
 
         }else {
             // 非法SUBSCRIBE控制包，直接断开连接
             ctx.channel().close();
         }
-    }
-
-    /**
-     * 校验主题过滤器是否合法
-     *
-     * @param topicFilter: 需要进行校验的主题过滤器
-     * @return boolean
-     * @author ZhangJun
-     * @date 12:02 2021/2/27
-     */
-    private boolean checkTopicFilter(String topicFilter) {
-        // 1. 校验层级分隔符，不允许以/符号结尾
-        if (StringUtils.endsWithIgnoreCase(topicFilter, "/")) {
-            return false;
-        }
-
-        // 2. 校验单层通配符
-
-
-        // 3. 校验多层通配符
-
-
-        return true;
     }
 
 }

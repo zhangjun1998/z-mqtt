@@ -10,7 +10,26 @@ import java.util.List;
  * @author ZhangJun
  * @date 14:00 2021/2/24
  */
-public class MQTTFactory {
+public class ZMqttMessageFactory {
+
+    /**
+     * 根据参数创建PUBLISH控制包
+     *
+     * @param qos: 服务质量
+     * @param topic: 主题
+     * @param payload: 载荷
+     * @param packetId: 消息标识
+     * @return io.netty.handler.codec.mqtt.MqttMessage
+     * @author ZhangJun
+     * @date 0:38 2021/2/28
+     */
+    public static MqttMessage getPublish(int qos, String topic, Object payload, int packetId) {
+        return MqttMessageFactory.newMessage(
+                new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(qos), false, 0),
+                new MqttPublishVariableHeader(topic, packetId),
+                payload
+        );
+    }
 
     /**
      * 根据参数创建指定的CONNACK控制包

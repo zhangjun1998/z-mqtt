@@ -1,6 +1,6 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
-import com.zjcoding.zmqttcommon.factory.MQTTFactory;
+import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
 import com.zjcoding.zmqttbroker.security.IAuth;
 import com.zjcoding.zmqttcommon.session.MqttSession;
 import com.zjcoding.zmqttstore.session.ISessionStore;
@@ -43,9 +43,9 @@ public class ConnectProcessor {
             Throwable throwable = connectMessage.decoderResult().cause();
 
             if (throwable instanceof MqttUnacceptableProtocolVersionException) {
-                ctx.channel().writeAndFlush(MQTTFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION));
+                ctx.channel().writeAndFlush(ZMqttMessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION));
             } else if (throwable instanceof MqttIdentifierRejectedException) {
-                ctx.channel().writeAndFlush(MQTTFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID));
+                ctx.channel().writeAndFlush(ZMqttMessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID));
             }
 
             ctx.channel().close();
@@ -63,7 +63,7 @@ public class ConnectProcessor {
 
         // 校验用户名、密码
         if (!auth.checkAuth(connectMessage)) {
-            ctx.channel().writeAndFlush(MQTTFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD));
+            ctx.channel().writeAndFlush(ZMqttMessageFactory.getConnAck(false, MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD));
             ctx.channel().close();
             return;
         }
@@ -97,7 +97,7 @@ public class ConnectProcessor {
 
         // 返回CONNACK控制包
         boolean sessionPresent = !isCleanSession && sessionStore.containsKey(clientId);
-        ctx.channel().writeAndFlush(MQTTFactory.getConnAck(sessionPresent, MqttConnectReturnCode.CONNECTION_ACCEPTED));
+        ctx.channel().writeAndFlush(ZMqttMessageFactory.getConnAck(sessionPresent, MqttConnectReturnCode.CONNECTION_ACCEPTED));
 
         // 当Clean Session为0时，需要恢复会话 todo
 
