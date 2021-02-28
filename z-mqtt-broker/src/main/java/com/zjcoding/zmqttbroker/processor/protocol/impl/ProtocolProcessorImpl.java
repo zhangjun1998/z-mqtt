@@ -1,12 +1,14 @@
 package com.zjcoding.zmqttbroker.processor.protocol.impl;
 
 import com.zjcoding.zmqttbroker.processor.message.ConnectProcessor;
+import com.zjcoding.zmqttbroker.processor.message.PublishProcessor;
 import com.zjcoding.zmqttbroker.processor.message.SubscribeProcessor;
 import com.zjcoding.zmqttbroker.processor.protocol.IProtocolProcessor;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,9 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
     private ConnectProcessor connectProcessor;
 
     @Resource
+    private PublishProcessor publishProcessor;
+
+    @Resource
     private SubscribeProcessor subscribeProcessor;
 
     @Override
@@ -37,7 +42,7 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
             case CONNACK:
                 break;
             case PUBLISH:
-
+                publishProcessor.processPublish(ctx, (MqttPublishMessage) mqttMessage);
                 break;
             case PUBACK:
                 break;

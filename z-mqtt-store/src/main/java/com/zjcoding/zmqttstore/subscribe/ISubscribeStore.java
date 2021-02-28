@@ -3,6 +3,8 @@ package com.zjcoding.zmqttstore.subscribe;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * 订阅信息存储接口
  *
@@ -32,5 +34,7 @@ public interface ISubscribeStore {
      * @date 11:24 2021/2/27
      */
     void removeSubscribe(String topicFilter, String clientId);
+
+    List<MqttSubscribe> searchTopic(String topic);
 
 }

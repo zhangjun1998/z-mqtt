@@ -1,6 +1,6 @@
 package com.zjcoding.zmqttstore.message;
 
-import io.netty.handler.codec.mqtt.MqttMessage;
+import com.zjcoding.zmqttcommon.message.RetainMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,11 +19,11 @@ public interface IMessageStore {
      * 存储控制包
      *
      * @param topic: 控制包所属主题
-     * @param mqttMessage: 控制包
+     * @param retainMessage: 需要存储的消息
      * @author ZhangJun
      * @date 16:00 2021/2/26
      */
-    void storeMessage(String topic, MqttMessage mqttMessage);
+    void storeMessage(String topic, RetainMessage retainMessage);
 
     /**
      * 清除topic下的所有消息
@@ -38,10 +38,10 @@ public interface IMessageStore {
      * 匹配主题过滤器，寻找对应消息
      *
      * @param topicFilter: 主题过滤器
-     * @return java.util.List<io.netty.handler.codec.mqtt.MqttMessage>
+     * @return java.util.List<com.zjcoding.zmqttcommon.message.RetainMessage>
      * @author ZhangJun
-     * @date 0:01 2021/2/28
+     * @date 21:33 2021/2/28
      */
-    List<MqttMessage> searchMessages(String topicFilter);
+    List<RetainMessage> searchMessages(String topicFilter);
 
 }

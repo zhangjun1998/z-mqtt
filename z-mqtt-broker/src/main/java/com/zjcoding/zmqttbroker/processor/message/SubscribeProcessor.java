@@ -1,21 +1,23 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
 import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
+import com.zjcoding.zmqttcommon.message.RetainMessage;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
+import com.zjcoding.zmqttcommon.util.MessageUtil;
 import com.zjcoding.zmqttcommon.util.TopicUtil;
 import com.zjcoding.zmqttstore.message.IMessageStore;
 import com.zjcoding.zmqttstore.session.ISessionStore;
 import com.zjcoding.zmqttstore.subscribe.ISubscribeStore;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.mqtt.MqttMessage;
-import io.netty.handler.codec.mqtt.MqttQoS;
-import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
-import io.netty.handler.codec.mqtt.MqttTopicSubscription;
+import io.netty.handler.codec.mqtt.*;
 import io.netty.util.AttributeKey;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +42,9 @@ public class SubscribeProcessor {
 
     @Resource
     private TopicUtil topicUtil;
+
+    @Resource
+    private MessageUtil messageUtil;
 
     /**
      * SUBSCRIBE控制包处理
@@ -86,8 +91,8 @@ public class SubscribeProcessor {
             // 返回订阅ACK
             ctx.channel().writeAndFlush(ZMqttMessageFactory.getSubAck(messageId, grantedQosLevels));
 
-            // 向该订阅者发送订阅主题下的retain消息
-            List<MqttMessage> retainMessages;
+            // 向该订阅者发送所有订阅主题下的retain消息
+            List<RetainMessage> retainMessages;
             int checkedQos;
             String checkedTopicFilter;
             for (MqttTopicSubscription subscription : checkedSubscriptionList) {
@@ -95,14 +100,12 @@ public class SubscribeProcessor {
                 checkedTopicFilter = subscription.topicName();
                 // 发送该topicFilter下需要返回的retain消息
                 retainMessages = messageStore.searchMessages(checkedTopicFilter);
-                for (MqttMessage retainMessage : retainMessages) {
-                    checkedQos = Math.min(checkedQos, retainMessage.fixedHeader().qosLevel().value());
-                    // 通过算法生成packetId todo
-                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, retainMessage.payload(), 0));
+                for (RetainMessage retainMessage : retainMessages) {
+                    checkedQos = Math.min(checkedQos, retainMessage.getQos());
+                    // todo 非池化内存分配是否合理，内存最终是否会被释放
+                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(retainMessage.getPayloadBytes()), messageUtil.nextId()));
                 }
-
             }
-
         }else {
             // 非法SUBSCRIBE控制包，直接断开连接
             ctx.channel().close();

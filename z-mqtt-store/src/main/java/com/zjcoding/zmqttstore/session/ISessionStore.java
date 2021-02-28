@@ -25,6 +25,16 @@ public interface ISessionStore {
     void storeSession(String clientId, MqttSession mqttSession);
 
     /**
+     * 根据客户端标识获取相应会话
+     *
+     * @param clientId: 客户端标识
+     * @return com.zjcoding.zmqttcommon.session.MqttSession
+     * @author ZhangJun
+     * @date 21:55 2021/2/28
+     */
+    MqttSession getSession(String clientId);
+
+    /**
      * 清除历史会话状态
      *
      * @param clientId: 客户端标识

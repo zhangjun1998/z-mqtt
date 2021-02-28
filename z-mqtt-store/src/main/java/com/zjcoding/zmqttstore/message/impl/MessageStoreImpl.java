@@ -1,8 +1,8 @@
 package com.zjcoding.zmqttstore.message.impl;
 
+import com.zjcoding.zmqttcommon.message.RetainMessage;
 import com.zjcoding.zmqttcommon.util.TopicUtil;
 import com.zjcoding.zmqttstore.message.IMessageStore;
-import io.netty.handler.codec.mqtt.MqttMessage;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -24,14 +24,11 @@ public class MessageStoreImpl implements IMessageStore {
     @Resource
     private TopicUtil topicUtil;
 
-    /**
-     * todo 这种存储结构好像不太合适，而且MqttMessage没有实现序列化接口
-     */
-    private Map<String, MqttMessage> messageMap = new ConcurrentHashMap<>();
+    private final Map<String, RetainMessage> messageMap = new ConcurrentHashMap<>();
 
     @Override
-    public void storeMessage(String topic, MqttMessage mqttMessage) {
-        messageMap.put(topic, mqttMessage);
+    public void storeMessage(String topic, RetainMessage retainMessage) {
+        messageMap.put(topic, retainMessage);
     }
 
     @Override
@@ -40,8 +37,8 @@ public class MessageStoreImpl implements IMessageStore {
     }
 
     @Override
-    public List<MqttMessage> searchMessages(String topicFilter) {
-        List<MqttMessage> messageList = new ArrayList<>();
+    public List<RetainMessage> searchMessages(String topicFilter) {
+        List<RetainMessage> messageList = new ArrayList<>();
         for (String topic : messageMap.keySet()) {
             if (topicUtil.matchTopic(topic, topicFilter)) {
                 messageList.add(messageMap.get(topic));

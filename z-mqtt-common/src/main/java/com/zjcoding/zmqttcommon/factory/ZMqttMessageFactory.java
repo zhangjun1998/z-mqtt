@@ -1,5 +1,6 @@
 package com.zjcoding.zmqttcommon.factory;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
 
 import java.util.List;
@@ -18,16 +19,50 @@ public class ZMqttMessageFactory {
      * @param qos: 服务质量
      * @param topic: 主题
      * @param payload: 载荷
-     * @param packetId: 消息标识
+     * @param messageId: 消息标识
      * @return io.netty.handler.codec.mqtt.MqttMessage
      * @author ZhangJun
      * @date 0:38 2021/2/28
      */
-    public static MqttMessage getPublish(int qos, String topic, Object payload, int packetId) {
+    public static MqttMessage getPublish(int qos, String topic, ByteBuf payload, int messageId) {
         return MqttMessageFactory.newMessage(
                 new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(qos), false, 0),
-                new MqttPublishVariableHeader(topic, packetId),
+                new MqttPublishVariableHeader(topic, messageId),
                 payload
+        );
+    }
+
+    /**
+     * 根据参数创建PUBACK控制包
+     *
+     * @param qos: 服务质量
+     * @param messageId: 唯一消息标识
+     * @return io.netty.handler.codec.mqtt.MqttMessage
+     * @author ZhangJun
+     * @date 22:25 2021/2/28
+     */
+    public static MqttMessage getPubAck(int qos,int messageId) {
+        return MqttMessageFactory.newMessage(
+                new MqttFixedHeader(MqttMessageType.PUBACK, false, MqttQoS.valueOf(qos), false, 0),
+                MqttMessageIdVariableHeader.from(messageId),
+                null
+        );
+    }
+
+    /**
+     * 根据参数创建PUBREC控制包
+     *
+     * @param qos: 服务质量
+     * @param messageId: 消息唯一标识
+     * @return io.netty.handler.codec.mqtt.MqttMessage
+     * @author ZhangJun
+     * @date 22:26 2021/2/28
+     */
+    public static MqttMessage getPubRec(int qos,int messageId) {
+        return MqttMessageFactory.newMessage(
+                new MqttFixedHeader(MqttMessageType.PUBREC, false, MqttQoS.valueOf(qos), false, 0),
+                MqttMessageIdVariableHeader.from(messageId),
+                null
         );
     }
 

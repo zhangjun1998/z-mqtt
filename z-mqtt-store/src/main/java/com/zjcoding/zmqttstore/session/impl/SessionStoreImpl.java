@@ -24,6 +24,11 @@ public class SessionStoreImpl implements ISessionStore {
     }
 
     @Override
+    public MqttSession getSession(String clientId) {
+        return sessionMap.get(clientId);
+    }
+
+    @Override
     public void cleanSession(String clientId) {
         sessionMap.remove(clientId);
     }
