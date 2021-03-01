@@ -100,14 +100,15 @@ public class PublishProcessor {
         List<MqttSubscribe> subscribes = subscribeStore.searchTopic(topic);
 
         if (!CollectionUtils.isEmpty(subscribes)) {
-            ByteBuf payload = getPayloadBuf(publishMessage);
-
             int messageId;
+            MqttMessage sendMessage;
             for (MqttSubscribe subscribe : subscribes) {
+                // 这里每个消息需要创建一个单独的ByteBuf，因为消息发送完会释放ByteBuf
+                ByteBuf payload = getPayloadBuf(publishMessage);
                 // 转发消息到当前在线的客户端
                 if (sessionStore.containsKey(subscribe.getClientId())) {
                     messageId = messageUtil.nextId();
-                    MqttMessage sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payload, messageId);
+                    sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payload, messageId);
                     sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(sendMessage);
                 }
             }
