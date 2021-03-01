@@ -8,7 +8,6 @@ import com.zjcoding.zmqttcommon.util.TopicUtil;
 import com.zjcoding.zmqttstore.message.IMessageStore;
 import com.zjcoding.zmqttstore.session.ISessionStore;
 import com.zjcoding.zmqttstore.subscribe.ISubscribeStore;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.*;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +47,7 @@ public class SubscribeProcessor {
     /**
      * SUBSCRIBE控制包处理
      *
-     * @param ctx: ChannelHandler上下文
+     * @param ctx:              ChannelHandler上下文
      * @param subscribeMessage: SUBSCRIBE控制包
      * @author ZhangJun
      * @date 10:45 2021/2/27
@@ -57,7 +55,7 @@ public class SubscribeProcessor {
     public void processSubscribe(ChannelHandlerContext ctx, MqttSubscribeMessage subscribeMessage) {
         // 检查当前客户端是否已通过连接认证
         String clientId = ctx.channel().attr(AttributeKey.valueOf("clientId")).get().toString();
-        if (!sessionStore.containsKey(clientId)){
+        if (!sessionStore.containsKey(clientId)) {
             ctx.channel().close();
             return;
         }
@@ -84,7 +82,7 @@ public class SubscribeProcessor {
                     qos = subscription.qualityOfService();
                     subscribeStore.storeSubscribe(topicFilter, new MqttSubscribe(clientId, topicFilter, qos.value()));
                     grantedQosLevels.add(qos.value());
-                }else {
+                } else {
                     grantedQosLevels.add(MqttQoS.FAILURE.value());
                 }
             }
@@ -106,7 +104,7 @@ public class SubscribeProcessor {
                     ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(retainMessage.getPayloadBytes()), messageUtil.nextId()));
                 }
             }
-        }else {
+        } else {
             // 非法SUBSCRIBE控制包，直接断开连接
             ctx.channel().close();
         }

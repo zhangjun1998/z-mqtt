@@ -56,7 +56,7 @@ public class TopicUtil {
     /**
      * 判断topic与topicFilter是否匹配，topic与topicFilter需要符合协议规范
      *
-     * @param topic: 主题
+     * @param topic:       主题
      * @param topicFilter: 主题过滤器
      * @return boolean
      * @author ZhangJun
@@ -79,7 +79,7 @@ public class TopicUtil {
                     return false;
                 }
             }
-        }else {
+        } else {
             return topic.equals(topicFilter);
         }
         return true;

@@ -20,7 +20,8 @@ public class MessageUtil {
      */
     private static final int ID_MAX = ~(-1 << 16);
 
-    private static final int ID_MIN = 1;;
+    private static final int ID_MIN = 1;
+    ;
 
     private volatile int currentId = ID_MIN;
 

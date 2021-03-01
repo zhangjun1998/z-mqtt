@@ -2,8 +2,11 @@ package com.zjcoding.zmqttbroker.processor.message;
 
 import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
 import com.zjcoding.zmqttbroker.security.IAuth;
+import com.zjcoding.zmqttcommon.message.RetainMessage;
 import com.zjcoding.zmqttcommon.session.MqttSession;
+import com.zjcoding.zmqttstore.message.IMessageStore;
 import com.zjcoding.zmqttstore.session.ISessionStore;
+import com.zjcoding.zmqttstore.subscribe.ISubscribeStore;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -30,10 +33,16 @@ public class ConnectProcessor {
     @Resource
     private ISessionStore sessionStore;
 
+    @Resource
+    private IMessageStore messageStore;
+
+    @Resource
+    private ISubscribeStore subscribeStore;
+
     /**
      * CONNECT控制包处理
      *
-     * @param ctx: ChannelHandler上下文
+     * @param ctx:            ChannelHandler上下文
      * @param connectMessage: CONNECT控制包
      * @author ZhangJun
      * @date 10:44 2021/2/27
@@ -71,6 +80,8 @@ public class ConnectProcessor {
         // 处理sessionPresent，清除历史会话状态
         if (isCleanSession) {
             sessionStore.cleanSession(clientId);
+            subscribeStore.removeSubscribe(clientId);
+            // todo 清除其它状态
         }
 
         // 处理遗嘱消息
@@ -92,8 +103,12 @@ public class ConnectProcessor {
 
         // 给channel加上clientId作为属性，防止未经授权的连接直接发送控制包
         ctx.channel().attr(AttributeKey.valueOf("clientId")).set(clientId);
-        // 存储会话信息
+
+        // 存储会话信息、遗嘱
         sessionStore.storeSession(clientId, mqttSession);
+        if (mqttSession.isHasWill() && mqttSession.isWillRetain()) {
+            messageStore.storeMessage(mqttSession.getWillTopic(), new RetainMessage(mqttSession.getWillTopic(), 0, mqttSession.getWillContent().getBytes(StandardCharsets.UTF_8), clientId));
+        }
 
         // 返回CONNACK控制包
         boolean sessionPresent = !isCleanSession && sessionStore.containsKey(clientId);

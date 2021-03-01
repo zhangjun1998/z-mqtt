@@ -34,7 +34,14 @@ public class SubscribeStoreImpl implements ISubscribeStore {
 
     @Override
     public void removeSubscribe(String topicFilter, String clientId) {
+        subScribeMap.get(topicFilter).remove(clientId);
+    }
 
+    @Override
+    public void removeSubscribe(String clientId) {
+        for (Map<String, MqttSubscribe> item : subScribeMap.values()) {
+            item.remove(clientId);
+        }
     }
 
     @Override

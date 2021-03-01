@@ -18,7 +18,7 @@ public interface IMessageStore {
     /**
      * 存储控制包
      *
-     * @param topic: 控制包所属主题
+     * @param topic:         控制包所属主题
      * @param retainMessage: 需要存储的消息
      * @author ZhangJun
      * @date 16:00 2021/2/26

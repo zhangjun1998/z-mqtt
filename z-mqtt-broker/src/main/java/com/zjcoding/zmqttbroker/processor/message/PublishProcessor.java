@@ -45,7 +45,7 @@ public class PublishProcessor {
     /**
      * PUBLISH控制包处理
      *
-     * @param ctx: ChannelHandler上下文
+     * @param ctx:            ChannelHandler上下文
      * @param publishMessage: PUBLISH控制包
      * @author ZhangJun
      * @date 10:44 2021/2/27
@@ -65,7 +65,7 @@ public class PublishProcessor {
 
             // 根据qos选择性回复PUBACK/PUBREC
             // qos == 1
-            if(MqttQoS.AT_LEAST_ONCE.value() == qoS) {
+            if (MqttQoS.AT_LEAST_ONCE.value() == qoS) {
                 ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubAck(qoS, messageId));
             }
             // qos == 2
@@ -74,11 +74,11 @@ public class PublishProcessor {
             }
 
             // 是否保留消息
-            if(publishMessage.fixedHeader().isRetain()) {
+            if (publishMessage.fixedHeader().isRetain()) {
                 RetainMessage retainMessage = new RetainMessage(topic, qoS, getPayloadBuf(publishMessage).array());
                 messageStore.storeMessage(topic, retainMessage);
             }
-        }else {
+        } else {
             ctx.channel().close();
         }
 
@@ -102,13 +102,12 @@ public class PublishProcessor {
         if (!CollectionUtils.isEmpty(subscribes)) {
             ByteBuf payload = getPayloadBuf(publishMessage);
 
-            MqttMessage sendMessage;
             int messageId;
             for (MqttSubscribe subscribe : subscribes) {
                 // 转发消息到当前在线的客户端
                 if (sessionStore.containsKey(subscribe.getClientId())) {
                     messageId = messageUtil.nextId();
-                    sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payload, messageId);
+                    MqttMessage sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payload, messageId);
                     sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(sendMessage);
                 }
             }

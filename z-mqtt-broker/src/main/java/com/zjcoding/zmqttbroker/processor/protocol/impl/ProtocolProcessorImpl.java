@@ -1,15 +1,10 @@
 package com.zjcoding.zmqttbroker.processor.protocol.impl;
 
-import com.zjcoding.zmqttbroker.processor.message.ConnectProcessor;
-import com.zjcoding.zmqttbroker.processor.message.PublishProcessor;
-import com.zjcoding.zmqttbroker.processor.message.SubscribeProcessor;
+import com.zjcoding.zmqttbroker.processor.message.*;
 import com.zjcoding.zmqttbroker.processor.protocol.IProtocolProcessor;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.mqtt.MqttConnectMessage;
-import io.netty.handler.codec.mqtt.MqttMessage;
-import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.*;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -33,6 +28,15 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
     @Resource
     private SubscribeProcessor subscribeProcessor;
 
+    @Resource
+    private UnSubscribeProcessor unSubscribeProcessor;
+
+    @Resource
+    private PingReqProcessor pingReqProcessor;
+
+    @Resource
+    private DisconnectProcessor disconnectProcessor;
+
     @Override
     public void processMqttMessage(ChannelHandlerContext ctx, MqttMessage mqttMessage) {
         switch (mqttMessage.fixedHeader().messageType()) {
@@ -49,6 +53,7 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
             case PUBREC:
                 break;
             case PUBREL:
+
                 break;
             case PUBCOMP:
                 break;
@@ -58,20 +63,20 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
             case SUBACK:
                 break;
             case UNSUBSCRIBE:
-
+                unSubscribeProcessor.processUnSubscribe(ctx, (MqttUnsubscribeMessage) mqttMessage);
                 break;
             case UNSUBACK:
                 break;
             case PINGREQ:
-
+                pingReqProcessor.processPingReq(ctx, mqttMessage);
                 break;
             case PINGRESP:
                 break;
             case DISCONNECT:
-
+                disconnectProcessor.processDisconnect(ctx, mqttMessage);
                 break;
             default:
-                // ctx.channel().close();
+                ctx.channel().close();
                 break;
         }
     }
