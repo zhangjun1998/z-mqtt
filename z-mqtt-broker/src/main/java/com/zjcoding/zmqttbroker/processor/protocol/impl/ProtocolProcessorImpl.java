@@ -2,7 +2,6 @@ package com.zjcoding.zmqttbroker.processor.protocol.impl;
 
 import com.zjcoding.zmqttbroker.processor.message.*;
 import com.zjcoding.zmqttbroker.processor.protocol.IProtocolProcessor;
-import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.*;
 import org.springframework.stereotype.Component;

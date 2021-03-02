@@ -7,8 +7,6 @@ import com.zjcoding.zmqttcommon.util.MessageUtil;
 import com.zjcoding.zmqttstore.message.IMessageStore;
 import com.zjcoding.zmqttstore.session.ISessionStore;
 import com.zjcoding.zmqttstore.subscribe.ISubscribeStore;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
@@ -56,14 +54,22 @@ public class PublishProcessor {
 
         // 判断该连接是否已通过认证
         if (sessionStore.containsKey(clientId)) {
-            // 转发消息到client，根据topic和在线client过滤
-            forwardPublishMessages(publishMessage);
+            /*
+             * 先获取payload的byte数组，然后每次根据bytes创建ByteBuf,
+             * 因为payloa读取之后索引会改变，因此只能读一次，
+             * ByteBuf发送后会被释放引用计数，因此每次需要重新创建，
+             * todo publishMessage没有被发送，不会自动释放引用计数，使用后需要手动释放，否则会导致堆外内存泄漏？？？
+             */
+            byte[] payloadBytes = new byte[publishMessage.payload().readableBytes()];
+            publishMessage.payload().getBytes(publishMessage.payload().readerIndex(), payloadBytes);
 
             int qoS = publishMessage.fixedHeader().qosLevel().value();
             String topic = publishMessage.variableHeader().topicName();
             int messageId = publishMessage.variableHeader().packetId();
 
-            // 根据qos选择性回复PUBACK/PUBREC
+            forwardPublishMessages(payloadBytes, topic, qoS);
+
+            // 根据qos选择性回复PUBACK或PUBREC
             // qos == 1
             if (MqttQoS.AT_LEAST_ONCE.value() == qoS) {
                 ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubAck(qoS, messageId));
@@ -75,7 +81,7 @@ public class PublishProcessor {
 
             // 是否保留消息
             if (publishMessage.fixedHeader().isRetain()) {
-                RetainMessage retainMessage = new RetainMessage(topic, qoS, getPayloadBuf(publishMessage).array());
+                RetainMessage retainMessage = new RetainMessage(topic, qoS, payloadBytes);
                 messageStore.storeMessage(topic, retainMessage);
             }
         } else {
@@ -88,14 +94,13 @@ public class PublishProcessor {
     /**
      * 转发消息到客户端
      *
-     * @param publishMessage: 需要转发的消息
+     * @param payloadBytes: 消息载荷
+     * @param topic:        消息主题
+     * @param qos:          服务质量
      * @author ZhangJun
-     * @date 22:18 2021/2/28
+     * @date 23:01 2021/3/1
      */
-    private void forwardPublishMessages(MqttPublishMessage publishMessage) {
-        String topic = publishMessage.variableHeader().topicName();
-        int qos = publishMessage.fixedHeader().qosLevel().value();
-
+    private void forwardPublishMessages(byte[] payloadBytes, String topic, int qos) {
         // 查找该话题的所有订阅客户端
         List<MqttSubscribe> subscribes = subscribeStore.searchTopic(topic);
 
@@ -103,31 +108,14 @@ public class PublishProcessor {
             int messageId;
             MqttMessage sendMessage;
             for (MqttSubscribe subscribe : subscribes) {
-                // 这里每个消息需要创建一个单独的ByteBuf，因为消息发送完会释放ByteBuf
-                ByteBuf payload = getPayloadBuf(publishMessage);
                 // 转发消息到当前在线的客户端
                 if (sessionStore.containsKey(subscribe.getClientId())) {
                     messageId = messageUtil.nextId();
-                    sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payload, messageId);
+                    sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payloadBytes, messageId);
                     sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(sendMessage);
                 }
             }
         }
-    }
-
-    /**
-     * 获取PUBLISH控制包载荷并返回封装的ByteBuf
-     *
-     * @param publishMessage:
-     * @return io.netty.buffer.ByteBuf
-     * @author ZhangJun
-     * @date 22:35 2021/2/28
-     */
-    private ByteBuf getPayloadBuf(MqttPublishMessage publishMessage) {
-        ByteBuf payload = Unpooled.buffer();
-        byte[] bytes = new byte[publishMessage.payload().readableBytes()];
-        payload.writeBytes(publishMessage.payload().getBytes(publishMessage.payload().readerIndex(), bytes));
-        return payload;
     }
 
 }
