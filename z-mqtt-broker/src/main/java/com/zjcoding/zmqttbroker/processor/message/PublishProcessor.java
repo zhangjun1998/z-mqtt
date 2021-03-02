@@ -107,11 +107,13 @@ public class PublishProcessor {
         if (!CollectionUtils.isEmpty(subscribes)) {
             int messageId;
             MqttMessage sendMessage;
+            int qosMin;
             for (MqttSubscribe subscribe : subscribes) {
                 // 转发消息到当前在线的客户端
                 if (sessionStore.containsKey(subscribe.getClientId())) {
-                    messageId = messageUtil.nextId();
-                    sendMessage = ZMqttMessageFactory.getPublish(Math.min(qos, subscribe.getQos()), topic, payloadBytes, messageId);
+                    qosMin = Math.min(qos, subscribe.getQos());
+                    messageId = messageUtil.nextId(qosMin != 0);
+                    sendMessage = ZMqttMessageFactory.getPublish(qosMin, topic, payloadBytes, messageId);
                     sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(sendMessage);
                 }
             }

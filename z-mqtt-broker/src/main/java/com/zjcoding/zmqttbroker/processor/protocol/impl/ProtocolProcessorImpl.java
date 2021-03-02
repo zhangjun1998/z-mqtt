@@ -25,6 +25,9 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
     private PublishProcessor publishProcessor;
 
     @Resource
+    private PubAckProcessor pubAckProcessor;
+
+    @Resource
     private SubscribeProcessor subscribeProcessor;
 
     @Resource
@@ -48,13 +51,17 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
                 publishProcessor.processPublish(ctx, (MqttPublishMessage) mqttMessage);
                 break;
             case PUBACK:
+
+                pubAckProcessor.processPubAck(ctx, (MqttPubAckMessage) mqttMessage);
                 break;
             case PUBREC:
+
                 break;
             case PUBREL:
 
                 break;
             case PUBCOMP:
+
                 break;
             case SUBSCRIBE:
                 subscribeProcessor.processSubscribe(ctx, (MqttSubscribeMessage) mqttMessage);

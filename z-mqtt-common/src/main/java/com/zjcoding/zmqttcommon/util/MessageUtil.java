@@ -30,17 +30,32 @@ public class MessageUtil {
     /**
      * 生成messageId
      *
+     * @param save: 是否保留生成的messageId
      * @return int
      * @author ZhangJun
-     * @date 15:01 2021/2/28
+     * @date 15:16 2021/3/2
      */
-    public synchronized int nextId() {
+    public synchronized int nextId(boolean save) {
         // todo 这种生成效率慢，而且分布式情况下可能造成Id冲突
-        while (idMap.containsKey(currentId)) {
-            currentId++;
+        do {
+            currentId ++;
+        } while (idMap.containsKey(currentId));
+
+        if (save) {
+            idMap.put(currentId, currentId);
         }
-        idMap.put(currentId, currentId);
         return currentId & ID_MAX;
+    }
+
+    /**
+     * 释放id，防止内存泄露以及Id分配不足
+     *
+     * @param releaseId: 需要释放的id
+     * @author ZhangJun
+     * @date 15:05 2021/3/2
+     */
+    public void releaseId(int releaseId) {
+        idMap.remove(releaseId);
     }
 
 }

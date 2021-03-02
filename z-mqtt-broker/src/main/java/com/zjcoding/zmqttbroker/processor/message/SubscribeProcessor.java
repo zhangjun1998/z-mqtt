@@ -93,6 +93,7 @@ public class SubscribeProcessor {
             List<RetainMessage> retainMessages;
             int checkedQos;
             String checkedTopicFilter;
+            int retainMessageId;
             for (MqttTopicSubscription subscription : checkedSubscriptionList) {
                 checkedQos = subscription.qualityOfService().value();
                 checkedTopicFilter = subscription.topicName();
@@ -100,8 +101,9 @@ public class SubscribeProcessor {
                 retainMessages = messageStore.searchMessages(checkedTopicFilter);
                 for (RetainMessage retainMessage : retainMessages) {
                     checkedQos = Math.min(checkedQos, retainMessage.getQos());
+                    retainMessageId = messageUtil.nextId(checkedQos != 0);
                     // todo 非池化内存分配是否合理，内存最终是否会被释放
-                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(retainMessage.getPayloadBytes()), messageUtil.nextId()));
+                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(retainMessage.getPayloadBytes()), retainMessageId));
                 }
             }
         } else {
