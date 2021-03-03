@@ -69,6 +69,7 @@ public class BrokerServer {
         // server启动引导设置
         bootstrap.group(bossGroup)
                 .channel(NioServerSocketChannel.class)
+                // todo 支持SSL加密、支持WebSocket连接
                 // 初始化处理子连接的handler
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override

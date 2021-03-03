@@ -36,7 +36,12 @@ public class MessageUtil {
      * @date 15:16 2021/3/2
      */
     public synchronized int nextId(boolean save) {
-        // todo 这种生成效率慢，而且分布式情况下可能造成Id冲突
+        /*
+         * todo 这种生成效率慢，而且分布式情况下可能造成Id冲突，
+         * todo 在高并发连接下可能会导致心跳超时断开连接，
+         * todo 多客户端连接时可能会由于等待锁而产生过高的时延，
+         * todo 考虑一下雪花算法
+         */
         do {
             currentId ++;
         } while (idMap.containsKey(currentId));

@@ -2,7 +2,7 @@ package com.zjcoding.zmqttbroker.processor.message;
 
 import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
 import com.zjcoding.zmqttbroker.security.IAuth;
-import com.zjcoding.zmqttcommon.message.RetainMessage;
+import com.zjcoding.zmqttcommon.message.CommonMessage;
 import com.zjcoding.zmqttcommon.session.MqttSession;
 import com.zjcoding.zmqttstore.message.IMessageStore;
 import com.zjcoding.zmqttstore.session.ISessionStore;
@@ -107,7 +107,7 @@ public class ConnectProcessor {
         // 存储会话信息、遗嘱
         sessionStore.storeSession(clientId, mqttSession);
         if (mqttSession.isHasWill() && mqttSession.isWillRetain()) {
-            messageStore.storeMessage(mqttSession.getWillTopic(), new RetainMessage(mqttSession.getWillTopic(), 0, mqttSession.getWillContent().getBytes(StandardCharsets.UTF_8), clientId));
+            messageStore.storeMessage(mqttSession.getWillTopic(), new CommonMessage(mqttSession.getWillTopic(), 0, mqttSession.getWillContent().getBytes(StandardCharsets.UTF_8), clientId));
         }
 
         // 返回CONNACK控制包

@@ -51,7 +51,6 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
                 publishProcessor.processPublish(ctx, (MqttPublishMessage) mqttMessage);
                 break;
             case PUBACK:
-
                 pubAckProcessor.processPubAck(ctx, (MqttPubAckMessage) mqttMessage);
                 break;
             case PUBREC:

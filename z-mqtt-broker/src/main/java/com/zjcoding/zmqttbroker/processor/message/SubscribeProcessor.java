@@ -1,7 +1,7 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
 import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
-import com.zjcoding.zmqttcommon.message.RetainMessage;
+import com.zjcoding.zmqttcommon.message.CommonMessage;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
 import com.zjcoding.zmqttcommon.util.MessageUtil;
 import com.zjcoding.zmqttcommon.util.TopicUtil;
@@ -90,7 +90,7 @@ public class SubscribeProcessor {
             ctx.channel().writeAndFlush(ZMqttMessageFactory.getSubAck(messageId, grantedQosLevels));
 
             // 向该订阅者发送所有订阅主题下的retain消息
-            List<RetainMessage> retainMessages;
+            List<CommonMessage> commonMessages;
             int checkedQos;
             String checkedTopicFilter;
             int retainMessageId;
@@ -98,12 +98,12 @@ public class SubscribeProcessor {
                 checkedQos = subscription.qualityOfService().value();
                 checkedTopicFilter = subscription.topicName();
                 // 发送该topicFilter下需要返回的retain消息
-                retainMessages = messageStore.searchMessages(checkedTopicFilter);
-                for (RetainMessage retainMessage : retainMessages) {
-                    checkedQos = Math.min(checkedQos, retainMessage.getQos());
+                commonMessages = messageStore.searchMessages(checkedTopicFilter);
+                for (CommonMessage commonMessage : commonMessages) {
+                    checkedQos = Math.min(checkedQos, commonMessage.getQos());
                     retainMessageId = messageUtil.nextId(checkedQos != 0);
                     // todo 非池化内存分配是否合理，内存最终是否会被释放
-                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(retainMessage.getPayloadBytes()), retainMessageId));
+                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(commonMessage.getPayloadBytes()), retainMessageId));
                 }
             }
         } else {

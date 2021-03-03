@@ -1,6 +1,6 @@
 package com.zjcoding.zmqttstore.message;
 
-import com.zjcoding.zmqttcommon.message.RetainMessage;
+import com.zjcoding.zmqttcommon.message.CommonMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,11 +19,11 @@ public interface IMessageStore {
      * 存储控制包
      *
      * @param topic:         控制包所属主题
-     * @param retainMessage: 需要存储的消息
+     * @param commonMessage: 需要存储的消息
      * @author ZhangJun
      * @date 16:00 2021/2/26
      */
-    void storeMessage(String topic, RetainMessage retainMessage);
+    void storeMessage(String topic, CommonMessage commonMessage);
 
     /**
      * 清除topic下的所有消息
@@ -42,6 +42,35 @@ public interface IMessageStore {
      * @author ZhangJun
      * @date 21:33 2021/2/28
      */
-    List<RetainMessage> searchMessages(String topicFilter);
+    List<CommonMessage> searchMessages(String topicFilter);
+
+    /**
+     * 存储qos等级为1、2的消息
+     *
+     * @param clientId: 客户端唯一标识
+     * @param dumpMessage: 需要存储的消息
+     * @author ZhangJun
+     * @date 17:30 2021/3/3
+     */
+    public void dumpMessage(String clientId, CommonMessage dumpMessage);
+
+    /**
+     * 移除指定消息
+     *
+     * @param clientId: 客户端唯一标识
+     * @param messageId: 消息唯一标识
+     * @author ZhangJun
+     * @date 17:36 2021/3/3
+     */
+    public void removeDump(String clientId, int messageId);
+
+    /**
+     * 根据客户端唯一标识批量移除消息
+     *
+     * @param clientId: 客户端唯一标识
+     * @author ZhangJun
+     * @date 17:37 2021/3/3
+     */
+    public void removeDump(String clientId);
 
 }

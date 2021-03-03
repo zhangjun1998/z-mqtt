@@ -1,7 +1,7 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
 import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
-import com.zjcoding.zmqttcommon.message.RetainMessage;
+import com.zjcoding.zmqttcommon.message.CommonMessage;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
 import com.zjcoding.zmqttcommon.util.MessageUtil;
 import com.zjcoding.zmqttstore.message.IMessageStore;
@@ -63,26 +63,39 @@ public class PublishProcessor {
             byte[] payloadBytes = new byte[publishMessage.payload().readableBytes()];
             publishMessage.payload().getBytes(publishMessage.payload().readerIndex(), payloadBytes);
 
-            int qoS = publishMessage.fixedHeader().qosLevel().value();
+            int qos = publishMessage.fixedHeader().qosLevel().value();
             String topic = publishMessage.variableHeader().topicName();
             int messageId = publishMessage.variableHeader().packetId();
 
-            forwardPublishMessages(payloadBytes, topic, qoS);
+            if (MqttQoS.EXACTLY_ONCE.value() != qos) {
+                forwardPublishMessages(payloadBytes, topic, qos);
+            }
+
+            // 消息存储
+            CommonMessage commonMessage = null;
 
             // 根据qos选择性回复PUBACK或PUBREC
             // qos == 1
-            if (MqttQoS.AT_LEAST_ONCE.value() == qoS) {
-                ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubAck(qoS, messageId));
+            if (MqttQoS.AT_LEAST_ONCE.value() == qos) {
+                // todo qos==1,需要存储消息，如果一段时间后没有收到接收方的ACK则重发
+                commonMessage = new CommonMessage(topic, qos, payloadBytes, clientId, messageId);
+                messageStore.dumpMessage(clientId, commonMessage);
+                ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubAck(qos, messageId));
             }
             // qos == 2
-            if (MqttQoS.EXACTLY_ONCE.value() == qoS) {
-                ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubRec(qoS, messageId));
+            if (MqttQoS.EXACTLY_ONCE.value() == qos) {
+                // todo qos==2,暂不转发消息，先存储并返回REC，收到REL后再转发消息并销毁消息且返回COMP
+                commonMessage = new CommonMessage(topic, qos, payloadBytes, clientId, messageId);
+                messageStore.dumpMessage(clientId, commonMessage);
+                ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubRec(qos, messageId));
             }
 
             // 是否保留消息
             if (publishMessage.fixedHeader().isRetain()) {
-                RetainMessage retainMessage = new RetainMessage(topic, qoS, payloadBytes);
-                messageStore.storeMessage(topic, retainMessage);
+                if (commonMessage == null) {
+                    commonMessage = new CommonMessage(topic, qos, payloadBytes);
+                }
+                messageStore.storeMessage(topic, commonMessage);
             }
         } else {
             ctx.channel().close();
