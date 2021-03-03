@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * UNSUBSCRIBE控制包处理
+ * UNSUBSCRIBE控制包处理器
  *
  * @author ZhangJun
  * @date 16:11 2021/3/1

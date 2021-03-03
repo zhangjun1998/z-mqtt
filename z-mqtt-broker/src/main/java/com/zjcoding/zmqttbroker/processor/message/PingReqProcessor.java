@@ -6,7 +6,7 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 import org.springframework.stereotype.Component;
 
 /**
- * PINGREQ控制包处理
+ * PINGREQ控制包处理器
  *
  * @author ZhangJun
  * @date 10:55 2021/3/1

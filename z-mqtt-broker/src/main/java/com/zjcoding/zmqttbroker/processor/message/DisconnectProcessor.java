@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * DISCONNECT控制包处理
+ * DISCONNECT控制包处理器
  *
  * @author ZhangJun
  * @date 11:06 2021/3/1

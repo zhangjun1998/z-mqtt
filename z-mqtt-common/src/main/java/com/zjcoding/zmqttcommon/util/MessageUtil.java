@@ -1,8 +1,13 @@
 package com.zjcoding.zmqttcommon.util;
 
+import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
+import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**

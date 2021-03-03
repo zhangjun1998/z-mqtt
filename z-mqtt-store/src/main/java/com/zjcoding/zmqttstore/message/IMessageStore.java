@@ -52,7 +52,18 @@ public interface IMessageStore {
      * @author ZhangJun
      * @date 17:30 2021/3/3
      */
-    public void dumpMessage(String clientId, CommonMessage dumpMessage);
+    void dumpMessage(String clientId, CommonMessage dumpMessage);
+
+    /**
+     * 查询dump消息
+     *
+     * @param clientId: 客户端唯一标识
+     * @param messageId: 消息唯一标识
+     * @return com.zjcoding.zmqttcommon.message.CommonMessage
+     * @author ZhangJun
+     * @date 21:55 2021/3/3
+     */
+    CommonMessage getDump(String clientId, int messageId);
 
     /**
      * 移除指定消息
@@ -62,7 +73,7 @@ public interface IMessageStore {
      * @author ZhangJun
      * @date 17:36 2021/3/3
      */
-    public void removeDump(String clientId, int messageId);
+    void removeDump(String clientId, int messageId);
 
     /**
      * 根据客户端唯一标识批量移除消息
@@ -71,6 +82,6 @@ public interface IMessageStore {
      * @author ZhangJun
      * @date 17:37 2021/3/3
      */
-    public void removeDump(String clientId);
+    void removeDump(String clientId);
 
 }

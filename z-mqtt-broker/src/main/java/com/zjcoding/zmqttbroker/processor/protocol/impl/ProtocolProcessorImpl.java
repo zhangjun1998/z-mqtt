@@ -28,6 +28,15 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
     private PubAckProcessor pubAckProcessor;
 
     @Resource
+    private PubRecProcessor pubRecProcessor;
+
+    @Resource
+    private PubRelProcessor pubRelProcessor;
+
+    @Resource
+    private PubCompProcessor pubCompProcessor;
+
+    @Resource
     private SubscribeProcessor subscribeProcessor;
 
     @Resource
@@ -54,13 +63,13 @@ public class ProtocolProcessorImpl implements IProtocolProcessor {
                 pubAckProcessor.processPubAck(ctx, (MqttPubAckMessage) mqttMessage);
                 break;
             case PUBREC:
-
+                pubRecProcessor.processPubRec(ctx, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
                 break;
             case PUBREL:
-
+                pubRelProcessor.processPubRel(ctx, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
                 break;
             case PUBCOMP:
-
+                pubCompProcessor.processPubComp(ctx, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
                 break;
             case SUBSCRIBE:
                 subscribeProcessor.processSubscribe(ctx, (MqttSubscribeMessage) mqttMessage);

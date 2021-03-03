@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * PUBLISH控制包处理
+ * PUBLISH控制包处理器
  *
  * @author ZhangJun
  * @date 14:41 2021/2/26
@@ -77,7 +77,7 @@ public class PublishProcessor {
             // 根据qos选择性回复PUBACK或PUBREC
             // qos == 1
             if (MqttQoS.AT_LEAST_ONCE.value() == qos) {
-                // todo qos==1,需要存储消息，如果一段时间后没有收到接收方的ACK则重发
+                // todo qos==1,转发并存储消息，如果一段时间后没有收到接收方的ACK则重发
                 commonMessage = new CommonMessage(topic, qos, payloadBytes, clientId, messageId);
                 messageStore.dumpMessage(clientId, commonMessage);
                 ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubAck(qos, messageId));
@@ -113,7 +113,7 @@ public class PublishProcessor {
      * @author ZhangJun
      * @date 23:01 2021/3/1
      */
-    private void forwardPublishMessages(byte[] payloadBytes, String topic, int qos) {
+    public void forwardPublishMessages(byte[] payloadBytes, String topic, int qos) {
         // 查找该话题的所有订阅客户端
         List<MqttSubscribe> subscribes = subscribeStore.searchTopic(topic);
 
@@ -121,13 +121,19 @@ public class PublishProcessor {
             int messageId;
             MqttMessage sendMessage;
             int qosMin;
+            String clientId;
             for (MqttSubscribe subscribe : subscribes) {
                 // 转发消息到当前在线的客户端
                 if (sessionStore.containsKey(subscribe.getClientId())) {
                     qosMin = Math.min(qos, subscribe.getQos());
                     messageId = messageUtil.nextId(qosMin != 0);
                     sendMessage = ZMqttMessageFactory.getPublish(qosMin, topic, payloadBytes, messageId);
-                    sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(sendMessage);
+                    clientId = subscribe.getClientId();
+                    sessionStore.getSession(clientId).getChannel().writeAndFlush(sendMessage);
+                    // 根据qos等级判断是否需要存储消息
+                    if (MqttQoS.AT_LEAST_ONCE.value() != qosMin) {
+                        messageStore.dumpMessage(clientId, new CommonMessage(topic, qosMin, payloadBytes, clientId, messageId));
+                    }
                 }
             }
         }

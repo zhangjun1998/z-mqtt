@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SUBSCRIBE控制包处理
+ * SUBSCRIBE控制包处理器
  *
  * @author ZhangJun
  * @date 10:41 2021/2/27

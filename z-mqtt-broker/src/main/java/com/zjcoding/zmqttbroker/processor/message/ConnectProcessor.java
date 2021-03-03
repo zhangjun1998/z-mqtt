@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
- * CONNECT控制包处理
+ * CONNECT控制包处理器
  *
  * @author ZhangJun
  * @date 13:48 2021/2/24

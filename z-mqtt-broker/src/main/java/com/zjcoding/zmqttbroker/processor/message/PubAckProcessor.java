@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * PUBACK控制包处理
+ * PUBACK控制包处理器
  *
  * @author ZhangJun
  * @date 15:38 2021/3/2
@@ -28,7 +28,7 @@ public class PubAckProcessor {
     /**
      * 处理PUBACK控制包
      *
-     * @param ctx: ChannelHandler上下文
+     * @param ctx:           ChannelHandler上下文
      * @param pubAckMessage: PUBACK控制包
      * @author ZhangJun
      * @date 15:40 2021/3/2

@@ -66,6 +66,11 @@ public class MessageStoreImpl implements IMessageStore {
     }
 
     @Override
+    public CommonMessage getDump(String clientId, int messageId) {
+        return dumpMessageMap.get(clientId) == null ? null : dumpMessageMap.get(clientId).get(messageId);
+    }
+
+    @Override
     public synchronized void removeDump(String clientId, int messageId) {
         Map<Integer, CommonMessage> messageMap = dumpMessageMap.get(clientId);
         if (messageMap.containsKey(messageId)) {
