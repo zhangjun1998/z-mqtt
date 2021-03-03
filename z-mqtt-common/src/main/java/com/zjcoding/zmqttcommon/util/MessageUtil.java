@@ -1,13 +1,8 @@
 package com.zjcoding.zmqttcommon.util;
 
-import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
-import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
-import io.netty.handler.codec.mqtt.MqttMessage;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,13 +19,12 @@ public class MessageUtil {
      * messageId占据两个字节，最大限制为65535
      */
     private static final int ID_MAX = ~(-1 << 16);
-
-    private static final int ID_MIN = 1;
-    ;
-
-    private volatile int currentId = ID_MIN;
-
-    private final Map<Integer, Integer> idMap = new HashMap<>();
+    //
+    // private static final int ID_MIN = 1;
+    //
+    // private volatile int currentId = ID_MIN;
+    //
+    // private final Map<Integer, Integer> idMap = new HashMap<>();
 
     /**
      * 生成messageId
@@ -40,22 +34,22 @@ public class MessageUtil {
      * @author ZhangJun
      * @date 15:16 2021/3/2
      */
-    public synchronized int nextId(boolean save) {
-        /*
-         * todo 这种生成效率慢，而且分布式情况下可能造成Id冲突，
-         * todo 在高并发连接下可能会导致心跳超时断开连接，
-         * todo 多客户端连接时可能会由于等待锁而产生过高的时延，
-         * todo 考虑一下雪花算法
-         */
-        do {
-            currentId ++;
-        } while (idMap.containsKey(currentId));
-
-        if (save) {
-            idMap.put(currentId, currentId);
-        }
-        return currentId & ID_MAX;
-    }
+    // public synchronized int nextId(boolean save) {
+    //     /*
+    //      * todo 这种生成效率慢，而且分布式情况下可能造成Id冲突，
+    //      * todo 在高并发连接下可能会导致心跳超时断开连接，
+    //      * todo 多客户端连接时可能会由于等待锁而产生过高的时延，
+    //      * todo 考虑一下雪花算法
+    //      */
+    //     do {
+    //         currentId ++;
+    //     } while (idMap.containsKey(currentId));
+    //
+    //     if (save) {
+    //         idMap.put(currentId, currentId);
+    //     }
+    //     return currentId & ID_MAX;
+    // }
 
     /**
      * 释放id，防止内存泄露以及Id分配不足
@@ -64,8 +58,18 @@ public class MessageUtil {
      * @author ZhangJun
      * @date 15:05 2021/3/2
      */
-    public void releaseId(int releaseId) {
-        idMap.remove(releaseId);
+    // public void releaseId(int releaseId) {
+    //     idMap.remove(releaseId);
+    // }
+
+    private volatile int currentId = 0;
+
+    public synchronized int nextId() {
+        currentId ++;
+        if (currentId > ID_MAX) {
+            currentId = 1;
+        }
+        return currentId;
     }
 
 }

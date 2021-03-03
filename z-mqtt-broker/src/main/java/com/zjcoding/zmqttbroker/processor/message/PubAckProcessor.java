@@ -39,7 +39,7 @@ public class PubAckProcessor {
         int messageId = pubAckMessage.variableHeader().messageId();
         messageStore.removeDump(clientId, messageId);
         // 释放Id
-        messageUtil.releaseId(messageId);
+        // messageUtil.releaseId(messageId);
     }
 
 }

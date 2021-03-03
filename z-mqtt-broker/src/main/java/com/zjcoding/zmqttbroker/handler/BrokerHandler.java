@@ -78,7 +78,8 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
         if (session.isHasWill()) {
             String willTopic = session.getWillTopic();
             String willContent = session.getWillContent();
-            int messageId = messageUtil.nextId(false);
+            // int messageId = messageUtil.nextId(false);
+            int messageId = messageUtil.nextId();
             MqttMessage willMessage = ZMqttMessageFactory.getPublish(0, willTopic, willContent.getBytes(StandardCharsets.UTF_8), messageId);
 
             List<MqttSubscribe> subscribes = subscribeStore.searchTopic(willTopic);
@@ -87,7 +88,7 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
                     sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(willMessage);
                 }
             }
-            messageUtil.releaseId(messageId);
+            // messageUtil.releaseId(messageId);
         }
         ctx.channel().close();
     }

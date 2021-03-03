@@ -101,7 +101,8 @@ public class SubscribeProcessor {
                 commonMessages = messageStore.searchMessages(checkedTopicFilter);
                 for (CommonMessage commonMessage : commonMessages) {
                     checkedQos = Math.min(checkedQos, commonMessage.getQos());
-                    retainMessageId = messageUtil.nextId(checkedQos != 0);
+                    // retainMessageId = messageUtil.nextId(checkedQos != 0);
+                    retainMessageId = messageUtil.nextId();
                     // todo 非池化内存分配是否合理，内存最终是否会被释放
                     ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(commonMessage.getPayloadBytes()), retainMessageId));
                 }
