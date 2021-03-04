@@ -4,7 +4,6 @@ import com.zjcoding.zmqttbroker.processor.protocol.IProtocolProcessor;
 import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
 import com.zjcoding.zmqttcommon.session.MqttSession;
 import com.zjcoding.zmqttcommon.subscribe.MqttSubscribe;
-import com.zjcoding.zmqttcommon.util.MessageUtil;
 import com.zjcoding.zmqttstore.session.ISessionStore;
 import com.zjcoding.zmqttstore.subscribe.ISubscribeStore;
 import io.netty.channel.ChannelHandler;
@@ -38,9 +37,6 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     @Resource
     private ISubscribeStore subscribeStore;
-
-    @Resource
-    private MessageUtil messageUtil;
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -86,7 +82,6 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
                     sessionStore.getSession(subscribe.getClientId()).getChannel().writeAndFlush(willMessage);
                 }
             }
-            // messageUtil.releaseId(messageId);
         }
         ctx.channel().close();
     }

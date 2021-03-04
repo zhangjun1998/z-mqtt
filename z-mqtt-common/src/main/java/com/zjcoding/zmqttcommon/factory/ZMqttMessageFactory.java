@@ -75,7 +75,7 @@ public class ZMqttMessageFactory {
     /**
      * 根据参数创建PUBREL控制包
      *
-     * @param qos: 服务质量
+     * @param qos:          服务质量
      * @param pubMessageId: PUBLISH消息唯一标识
      * @return io.netty.handler.codec.mqtt.MqttMessage
      * @author ZhangJun
@@ -84,6 +84,23 @@ public class ZMqttMessageFactory {
     public static MqttMessage getPubRel(int qos, int pubMessageId) {
         return MqttMessageFactory.newMessage(
                 new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.valueOf(qos), false, 0),
+                MqttMessageIdVariableHeader.from(pubMessageId),
+                null
+        );
+    }
+
+    /**
+     * 根据参数创建PUBCOMP控制包
+     *
+     * @param qos:          服务质量
+     * @param pubMessageId: 消息唯一标识
+     * @return io.netty.handler.codec.mqtt.MqttMessage
+     * @author ZhangJun
+     * @date 22:08 2021/3/4
+     */
+    public static MqttMessage getPubComp(int qos, int pubMessageId) {
+        return MqttMessageFactory.newMessage(
+                new MqttFixedHeader(MqttMessageType.PUBCOMP, false, MqttQoS.valueOf(qos), false, 0),
                 MqttMessageIdVariableHeader.from(pubMessageId),
                 null
         );

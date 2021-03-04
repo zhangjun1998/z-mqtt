@@ -38,8 +38,6 @@ public class PubAckProcessor {
         String clientId = ctx.channel().attr(AttributeKey.valueOf("clientId")).get().toString();
         int messageId = pubAckMessage.variableHeader().messageId();
         messageStore.removeDump(clientId, messageId);
-        // 释放Id
-        // messageUtil.releaseId(messageId);
     }
 
 }

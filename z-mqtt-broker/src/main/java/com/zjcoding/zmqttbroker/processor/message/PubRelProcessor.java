@@ -1,9 +1,12 @@
 package com.zjcoding.zmqttbroker.processor.message;
 
+import com.zjcoding.zmqttcommon.factory.ZMqttMessageFactory;
 import com.zjcoding.zmqttcommon.message.CommonMessage;
 import com.zjcoding.zmqttstore.message.IMessageStore;
+import com.zjcoding.zmqttstore.session.ISessionStore;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.util.AttributeKey;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +28,9 @@ public class PubRelProcessor {
     @Resource
     private IMessageStore messageStore;
 
+    @Resource
+    private ISessionStore sessionStore;
+
     /**
      * 处理PUBREL控制包
      *
@@ -38,10 +44,10 @@ public class PubRelProcessor {
         int messageId = messageIdVariableHeader.messageId();
         CommonMessage dumpMessage = messageStore.getDump(clientId, messageId);
         if (dumpMessage != null) {
+            messageStore.removeDump(clientId, messageId);
             publishProcessor.forwardPublishMessages(dumpMessage.getPayloadBytes(), dumpMessage.getTopic(), dumpMessage.getQos());
         }
-        messageStore.removeDump(clientId, messageId);
-        // todo
+        sessionStore.getSession(clientId).getChannel().writeAndFlush(ZMqttMessageFactory.getPubComp(MqttQoS.AT_MOST_ONCE.value(), messageId));
     }
 
 }

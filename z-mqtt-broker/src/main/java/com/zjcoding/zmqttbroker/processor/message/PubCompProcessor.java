@@ -23,7 +23,7 @@ public class PubCompProcessor {
      * @date 23:10 2021/3/3
      */
     public void processPubComp(ChannelHandlerContext ctx, MqttMessageIdVariableHeader idVariableHeader) {
-        // todo 释放消息
+        // 表示本次消息流程结束，无需响应
     }
 
 }

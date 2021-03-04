@@ -63,39 +63,41 @@ public class PublishProcessor {
             byte[] payloadBytes = new byte[publishMessage.payload().readableBytes()];
             publishMessage.payload().getBytes(publishMessage.payload().readerIndex(), payloadBytes);
 
+            boolean isDup = publishMessage.fixedHeader().isDup();
             int qos = publishMessage.fixedHeader().qosLevel().value();
             String topic = publishMessage.variableHeader().topicName();
             int messageId = publishMessage.variableHeader().packetId();
 
+            // 处理重复发送的消息
+            if (isDup && messageStore.getDump(clientId, messageId) == null) {
+                return;
+            }
+
+            // 转发消息到订阅者
             if (MqttQoS.EXACTLY_ONCE.value() != qos) {
                 forwardPublishMessages(payloadBytes, topic, qos);
             }
 
-            // 消息存储
-            CommonMessage commonMessage = null;
+            // 存储接收的消息
+            CommonMessage receiveMessage = null;
 
-            // 根据qos选择性回复PUBACK或PUBREC
-            // qos == 1
+            // qos==1,转发并存储消息，如果一段时间后没有收到接收方的ACK则重发
             if (MqttQoS.AT_LEAST_ONCE.value() == qos) {
-                // todo qos==1,转发并存储消息，如果一段时间后没有收到接收方的ACK则重发
-                commonMessage = new CommonMessage(topic, qos, payloadBytes, clientId, messageId);
-                messageStore.dumpMessage(clientId, commonMessage);
                 ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubAck(qos, messageId));
             }
-            // qos == 2
+            // qos==2,暂不转发消息，先存储并返回REC，收到REL后再转发消息并销毁消息且返回COMP
             if (MqttQoS.EXACTLY_ONCE.value() == qos) {
-                // todo qos==2,暂不转发消息，先存储并返回REC，收到REL后再转发消息并销毁消息且返回COMP
-                commonMessage = new CommonMessage(topic, qos, payloadBytes, clientId, messageId);
-                messageStore.dumpMessage(clientId, commonMessage);
+                receiveMessage = new CommonMessage(topic, qos, payloadBytes, clientId, messageId);
+                messageStore.dumpMessage(clientId, receiveMessage);
                 ctx.channel().writeAndFlush(ZMqttMessageFactory.getPubRec(qos, messageId));
             }
 
-            // 是否保留消息
+            // 是否保留接收的消息
             if (publishMessage.fixedHeader().isRetain()) {
-                if (commonMessage == null) {
-                    commonMessage = new CommonMessage(topic, qos, payloadBytes);
+                if (receiveMessage == null) {
+                    receiveMessage = new CommonMessage(topic, qos, payloadBytes);
                 }
-                messageStore.storeMessage(topic, commonMessage);
+                messageStore.storeMessage(topic, receiveMessage);
             }
         } else {
             ctx.channel().close();
@@ -122,19 +124,23 @@ public class PublishProcessor {
             MqttMessage sendMessage;
             int qosMin;
             String clientId;
+            CommonMessage forwardMessage;
             for (MqttSubscribe subscribe : subscribes) {
+                clientId = subscribe.getClientId();
                 // 转发消息到当前在线的客户端
-                if (sessionStore.containsKey(subscribe.getClientId())) {
+                if (sessionStore.containsKey(clientId)) {
                     qosMin = Math.min(qos, subscribe.getQos());
-                    // 尽量减少nextId()获取锁占用的时间
+                    // qos==0时不需要分配消息唯一标识，尽量减少nextId()获取锁占用的时间
                     if (MqttQoS.AT_MOST_ONCE.value() == qosMin) {
                         messageId = 0;
                     } else {
-                        // messageId = messageUtil.nextId(qosMin != 0);
                         messageId = messageUtil.nextId();
+                        // 存储转发消息，等待接收方回复确认后释放，未确认则稍后重发
+                        forwardMessage = new CommonMessage(topic, qosMin, payloadBytes, clientId, messageId);
+                        messageStore.dumpMessage(clientId, forwardMessage);
                     }
+                    // 转发消息
                     sendMessage = ZMqttMessageFactory.getPublish(qosMin, topic, payloadBytes, messageId);
-                    clientId = subscribe.getClientId();
                     sessionStore.getSession(clientId).getChannel().writeAndFlush(sendMessage);
                 }
             }

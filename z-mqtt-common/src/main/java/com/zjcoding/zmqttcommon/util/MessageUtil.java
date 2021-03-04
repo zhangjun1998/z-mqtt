@@ -2,9 +2,6 @@ package com.zjcoding.zmqttcommon.util;
 
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 控制包相关工具类
  *
@@ -16,54 +13,21 @@ import java.util.Map;
 public class MessageUtil {
 
     /**
-     * messageId占据两个字节，最大限制为65535
+     * 有效唯一标识messageId占据两个字节，最大限制为65535，最小限制为1
      */
     private static final int ID_MAX = ~(-1 << 16);
-    //
-    // private static final int ID_MIN = 1;
-    //
-    // private volatile int currentId = ID_MIN;
-    //
-    // private final Map<Integer, Integer> idMap = new HashMap<>();
-
-    /**
-     * 生成messageId
-     *
-     * @param save: 是否保留生成的messageId
-     * @return int
-     * @author ZhangJun
-     * @date 15:16 2021/3/2
-     */
-    // public synchronized int nextId(boolean save) {
-    //     /*
-    //      * todo 这种生成效率慢，而且分布式情况下可能造成Id冲突，
-    //      * todo 在高并发连接下可能会导致心跳超时断开连接，
-    //      * todo 多客户端连接时可能会由于等待锁而产生过高的时延，
-    //      * todo 考虑一下雪花算法
-    //      */
-    //     do {
-    //         currentId ++;
-    //     } while (idMap.containsKey(currentId));
-    //
-    //     if (save) {
-    //         idMap.put(currentId, currentId);
-    //     }
-    //     return currentId & ID_MAX;
-    // }
-
-    /**
-     * 释放id，防止内存泄露以及Id分配不足
-     *
-     * @param releaseId: 需要释放的id
-     * @author ZhangJun
-     * @date 15:05 2021/3/2
-     */
-    // public void releaseId(int releaseId) {
-    //     idMap.remove(releaseId);
-    // }
 
     private volatile int currentId = 0;
 
+    /**
+     * 生成消息唯一标识
+     * 这种生成方式更加快速，无需释放Id，无需检测Id是否已存在，但不完全保证消息标识的唯一性
+     * todo 分布式情况下如何确认不重复
+     *
+     * @return int
+     * @author ZhangJun
+     * @date 22:29 2021/3/4
+     */
     public synchronized int nextId() {
         currentId ++;
         if (currentId > ID_MAX) {
