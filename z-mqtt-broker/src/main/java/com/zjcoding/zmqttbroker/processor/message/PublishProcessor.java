@@ -126,15 +126,16 @@ public class PublishProcessor {
                 // 转发消息到当前在线的客户端
                 if (sessionStore.containsKey(subscribe.getClientId())) {
                     qosMin = Math.min(qos, subscribe.getQos());
-                    // messageId = messageUtil.nextId(qosMin != 0);
-                    messageId = messageUtil.nextId();
+                    // 尽量减少nextId()获取锁占用的时间
+                    if (MqttQoS.AT_MOST_ONCE.value() == qosMin) {
+                        messageId = 0;
+                    } else {
+                        // messageId = messageUtil.nextId(qosMin != 0);
+                        messageId = messageUtil.nextId();
+                    }
                     sendMessage = ZMqttMessageFactory.getPublish(qosMin, topic, payloadBytes, messageId);
                     clientId = subscribe.getClientId();
                     sessionStore.getSession(clientId).getChannel().writeAndFlush(sendMessage);
-                    // 根据qos等级判断是否需要存储消息
-                    if (MqttQoS.AT_MOST_ONCE.value() != qosMin) {
-                        messageStore.dumpMessage(clientId, new CommonMessage(topic, qosMin, payloadBytes, clientId, messageId));
-                    }
                 }
             }
         }

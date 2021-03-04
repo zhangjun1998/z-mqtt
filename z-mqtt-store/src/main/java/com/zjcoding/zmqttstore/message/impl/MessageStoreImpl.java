@@ -62,6 +62,7 @@ public class MessageStoreImpl implements IMessageStore {
     public void dumpMessage(String clientId, CommonMessage dumpMessage) {
         Map<Integer, CommonMessage> messageMap = new HashMap<>();
         messageMap.put(dumpMessage.getMessageId(), dumpMessage);
+        dumpMessageMap.putIfAbsent(clientId, new ConcurrentHashMap<>());
         dumpMessageMap.get(clientId).putAll(messageMap);
     }
 
@@ -73,11 +74,11 @@ public class MessageStoreImpl implements IMessageStore {
     @Override
     public synchronized void removeDump(String clientId, int messageId) {
         Map<Integer, CommonMessage> messageMap = dumpMessageMap.get(clientId);
-        if (messageMap.containsKey(messageId)) {
+        if (messageMap != null && messageMap.containsKey(messageId)) {
             messageMap.remove(messageId);
             if (messageMap.size() > 0) {
                 dumpMessageMap.put(clientId, messageMap);
-            }else {
+            } else {
                 dumpMessageMap.remove(clientId);
             }
         }
