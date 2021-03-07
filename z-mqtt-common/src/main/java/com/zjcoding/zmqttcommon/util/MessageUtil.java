@@ -22,7 +22,7 @@ public class MessageUtil {
     /**
      * 生成消息唯一标识
      * 这种生成方式更加快速，无需释放Id，无需检测Id是否已存在，但不完全保证消息标识的唯一性
-     * todo 分布式情况下如何确认不重复
+     * todo 分布式情况下如何确认不重复(雪花算法变种)
      *
      * @return int
      * @author ZhangJun

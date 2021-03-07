@@ -107,7 +107,6 @@ public class SubscribeProcessor {
                         // retainMessageId = messageUtil.nextId(checkedQos != 0);
                         retainMessageId = messageUtil.nextId();
                     }
-                    // todo 非池化内存分配是否合理，内存最终是否会被释放
                     ctx.channel().writeAndFlush(
                             ZMqttMessageFactory.getPublish(
                                     checkedQos,

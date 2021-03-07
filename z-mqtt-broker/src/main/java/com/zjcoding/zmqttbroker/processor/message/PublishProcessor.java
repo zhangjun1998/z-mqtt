@@ -58,7 +58,6 @@ public class PublishProcessor {
              * 先获取payload的byte数组，然后每次根据bytes创建ByteBuf,
              * 因为payloa读取之后索引会改变，因此只能读一次，
              * ByteBuf发送后会被释放引用计数，因此每次需要重新创建，
-             * todo publishMessage没有被发送，不会自动释放引用计数，使用后需要手动释放，否则会导致堆外内存泄漏？？？
              */
             byte[] payloadBytes = new byte[publishMessage.payload().readableBytes()];
             publishMessage.payload().getBytes(publishMessage.payload().readerIndex(), payloadBytes);
