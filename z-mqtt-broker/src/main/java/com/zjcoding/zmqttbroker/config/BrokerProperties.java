@@ -17,14 +17,14 @@ import org.springframework.stereotype.Component;
 public class BrokerProperties {
 
     /**
-     * mqtt端口，默认1883
+     * MQTT端口，默认1883
      */
     private int mqttPort = 1883;
 
     /**
-     * 心跳间隔，默认30秒
+     * WebSocket端口
      */
-    private int keepAlive = 30;
+    private int webSocketPort = 8883;
 
     /**
      * 是否开启心跳保活，默认开启
@@ -32,9 +32,24 @@ public class BrokerProperties {
     private boolean soKeepAlive = true;
 
     /**
-     * 用户名、密码
+     * 心跳间隔，默认30秒
+     */
+    private int keepAlive = 30;
+
+    /**
+     * MQTT连接用户名、密码
      */
     private String userName = "";
     private String password = "";
+
+    /**
+     * 是否使用SSL加密
+     */
+    private boolean useSSL = false;
+
+    /**
+     * SSL私钥密码
+     */
+    private String sslPassword;
 
 }
