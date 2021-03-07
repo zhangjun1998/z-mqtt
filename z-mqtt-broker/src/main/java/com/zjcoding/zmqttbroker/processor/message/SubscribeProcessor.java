@@ -108,7 +108,14 @@ public class SubscribeProcessor {
                         retainMessageId = messageUtil.nextId();
                     }
                     // todo 非池化内存分配是否合理，内存最终是否会被释放
-                    ctx.channel().writeAndFlush(ZMqttMessageFactory.getPublish(checkedQos, checkedTopicFilter, Unpooled.buffer().writeBytes(commonMessage.getPayloadBytes()), retainMessageId));
+                    ctx.channel().writeAndFlush(
+                            ZMqttMessageFactory.getPublish(
+                                    checkedQos,
+                                    checkedTopicFilter,
+                                    Unpooled.buffer().writeBytes(commonMessage.getPayloadBytes()),
+                                    retainMessageId
+                            )
+                    );
                 }
             }
         } else {

@@ -12,10 +12,13 @@ import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -38,6 +41,9 @@ public class ConnectProcessor {
 
     @Resource
     private ISubscribeStore subscribeStore;
+
+    @Resource
+    private PublishProcessor publishProcessor;
 
     /**
      * CONNECT控制包处理
@@ -77,11 +83,12 @@ public class ConnectProcessor {
             return;
         }
 
-        // 处理sessionPresent，清除历史会话状态
+        // 处理sessionPresent，清除客户端历史
         if (isCleanSession) {
             sessionStore.cleanSession(clientId);
             subscribeStore.removeSubscribe(clientId);
-            // todo 清除其它状态
+            messageStore.removeMessage(clientId);
+            messageStore.removeDump(clientId);
         }
 
         // 处理遗嘱消息
@@ -114,8 +121,16 @@ public class ConnectProcessor {
         boolean sessionPresent = !isCleanSession && sessionStore.containsKey(clientId);
         ctx.channel().writeAndFlush(ZMqttMessageFactory.getConnAck(sessionPresent, MqttConnectReturnCode.CONNECTION_ACCEPTED));
 
-        // 当Clean Session为0时，需要恢复会话 todo
-
+        // Clean Session为0，恢复会话
+        if (!isCleanSession) {
+            Map<Integer, CommonMessage> dumpMessageMap = messageStore.getDump(clientId);
+            messageStore.removeDump(clientId);
+            if (!CollectionUtils.isEmpty(dumpMessageMap)) {
+                for (CommonMessage commonMessage : dumpMessageMap.values()) {
+                    publishProcessor.forwardPublishMessages(commonMessage.getPayloadBytes(), commonMessage.getTopic(), commonMessage.getQos());
+                }
+            }
+        }
 
     }
 }

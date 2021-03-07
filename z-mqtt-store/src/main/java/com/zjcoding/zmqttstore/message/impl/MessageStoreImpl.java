@@ -47,6 +47,14 @@ public class MessageStoreImpl implements IMessageStore {
         commonMessageMap.remove(topic);
     }
 
+    public void removeMessage(String clientId) {
+        for (Map.Entry<String, CommonMessage> item : commonMessageMap.entrySet()) {
+            if (item.getValue().getClientId().equals(clientId)) {
+                commonMessageMap.remove(item.getKey());
+            }
+        }
+    }
+
     @Override
     public List<CommonMessage> searchMessages(String topicFilter) {
         List<CommonMessage> messageList = new ArrayList<>();
@@ -64,6 +72,10 @@ public class MessageStoreImpl implements IMessageStore {
         messageMap.put(dumpMessage.getMessageId(), dumpMessage);
         dumpMessageMap.putIfAbsent(clientId, new ConcurrentHashMap<>());
         dumpMessageMap.get(clientId).putAll(messageMap);
+    }
+
+    public Map<Integer, CommonMessage> getDump(String clientId) {
+        return dumpMessageMap.get(clientId);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.zjcoding.zmqttcommon.message.CommonMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Retain消息存储接口
@@ -35,6 +36,15 @@ public interface IMessageStore {
     void cleanTopic(String topic);
 
     /**
+     * 根据clientId清除消息
+     *
+     * @param clientId: 客户端唯一标识
+     * @author ZhangJun
+     * @date 16:13 2021/3/7
+     */
+    void removeMessage(String clientId);
+
+    /**
      * 匹配主题过滤器，寻找对应消息
      *
      * @param topicFilter: 主题过滤器
@@ -53,6 +63,16 @@ public interface IMessageStore {
      * @date 17:30 2021/3/3
      */
     void dumpMessage(String clientId, CommonMessage dumpMessage);
+
+    /**
+     * 查询dump消息
+     *
+     * @param clientId: 客户端唯一标识
+     * @return java.util.Map<java.lang.Integer,com.zjcoding.zmqttcommon.message.CommonMessage>
+     * @author ZhangJun
+     * @date 16:39 2021/3/7
+     */
+    Map<Integer, CommonMessage> getDump(String clientId);
 
     /**
      * 查询dump消息
