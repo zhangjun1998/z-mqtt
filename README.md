@@ -74,6 +74,6 @@ z-mqtt
 
 Email：zhangjun_java@163.com
 
-微信：rzy-zj(备注Github=>zmqtt)
+QQ：1097653004
 
 
